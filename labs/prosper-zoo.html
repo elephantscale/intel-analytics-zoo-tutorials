@@ -2,7 +2,7 @@
 <html>
 <head><meta charset="utf-8" />
 
-<title>mpg-zoo</title>
+<title>prosper-zoo</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
@@ -13116,178 +13116,34 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Regression-MPG-With-Analytics-Zoo">Regression MPG With Analytics Zoo<a class="anchor-link" href="#Regression-MPG-With-Analytics-Zoo">&#182;</a></h1><p>Here we are going to demonstrate an Analytics Zoo example with the Keras-style API.</p>
-<p>In a regression problem, we aim to predict the output of a continuous value, like a price or a probability. Contrast this with a classification problem, where we aim to select a class from a list of classes (for example, where a picture contains an apple or an orange, recognizing which fruit is in the picture).</p>
-<p>This notebook uses the classic Auto MPG Dataset and builds a model to predict the fuel efficiency of late-1970s and early 1980s automobiles. To do this, we'll provide the model with a description of many automobiles from that time period. This description includes attributes like: cylinders, displacement, horsepower, and weight.</p>
-<p>This example uses the Analytics Zoo Keras-style API.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Intialization">Intialization<a class="anchor-link" href="#Intialization">&#182;</a></h2>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<ul>
-<li>import necesary libraries</li>
-</ul>
+<h1 id="Analytics-ZOO-Neural-Network-:-Prosper-Loan-Dataset">Analytics ZOO Neural Network : Prosper Loan Dataset<a class="anchor-link" href="#Analytics-ZOO-Neural-Network-:-Prosper-Loan-Dataset">&#182;</a></h1><p>We are going to look at the prosper loan dataset.  This dataset shows a history of loans made by Prosper.</p>
+<p>The idea with this dataset is to try to predict whether a loan will be "good" or "bad." There are many ways a loan can be bad, from late payments to defaults, but we will turn this into a binary choice between "good" loans and "bad" loans.</p>
+<p>We will use a neural network in the Keras-style API in Analytics Zoo to do the prediction of "good" loans or "bad.</p>
+<p>This uses Analytics Zoo.   If you want to see a "vanilla" Tensorflow version of this lab, click <a href="./prosper-tf.html">here</a>.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 
-<span class="kn">import</span> <span class="nn">zoo.common.nncontext</span>
-<span class="n">sc</span> <span class="o">=</span> <span class="n">zoo</span><span class="o">.</span><span class="n">common</span><span class="o">.</span><span class="n">nncontext</span><span class="o">.</span><span class="n">init_nncontext</span><span class="p">(</span><span class="s2">&quot;MPG Regression&quot;</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">zoo.common.nncontext</span> <span class="k">import</span> <span class="o">*</span>
+<span class="n">sc</span> <span class="o">=</span> <span class="n">init_nncontext</span><span class="p">(</span><span class="s2">&quot;MPG Regression&quot;</span><span class="p">)</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib</span>
 <span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;Agg&#39;</span><span class="p">)</span>
 <span class="o">%</span><span class="k">pylab</span> inline
-<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
-</pre></div>
+<span class="kn">import</span> <span class="nn">seaborn</span>
+<span class="kn">import</span> <span class="nn">matplotlib.dates</span> <span class="k">as</span> <span class="nn">md</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Populating the interactive namespace from numpy and matplotlib
-</pre>
-</div>
-</div>
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stderr output_text">
-<pre>/opt/conda/envs/py35/lib/python3.5/site-packages/ipykernel_launcher.py:8: UserWarning: 
-This call to matplotlib.use() has no effect because the backend has already
-been chosen; matplotlib.use() must be called *before* pylab, matplotlib.pyplot,
-or matplotlib.backends is imported for the first time.
-
-The backend was *originally* set to &#39;module://ipykernel.pylab.backend_inline&#39; by the following code:
-  File &#34;/opt/conda/envs/py35/lib/python3.5/runpy.py&#34;, line 193, in _run_module_as_main
-    &#34;__main__&#34;, mod_spec)
-  File &#34;/opt/conda/envs/py35/lib/python3.5/runpy.py&#34;, line 85, in _run_code
-    exec(code, run_globals)
-  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/ipykernel_launcher.py&#34;, line 16, in &lt;module&gt;
-    app.launch_new_instance()
-  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/traitlets/config/application.py&#34;, line 658, in launch_instance
-    app.start()
-  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/ipykernel/kernelapp.py&#34;, line 505, in start
-    self.io_loop.start()
-  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/tornado/platform/asyncio.py&#34;, line 132, in start
-    self.asyncio_loop.run_forever()
-  File &#34;/opt/conda/envs/py35/lib/python3.5/asyncio/base_events.py&#34;, line 421, in run_forever
-    self._run_once()
-  File &#34;/opt/conda/envs/py35/lib/python3.5/asyncio/base_events.py&#34;, line 1425, in _run_once
-    handle._run()
-  File &#34;/opt/conda/envs/py35/lib/python3.5/asyncio/events.py&#34;, line 127, in _run
-    self._callback(*self._args)
-  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/tornado/ioloop.py&#34;, line 758, in _run_callback
-    ret = callback()
-  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/tornado/stack_context.py&#34;, line 300, in null_wrapper
-    return fn(*args, **kwargs)
-  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/tornado/gen.py&#34;, line 1233, in inner
-    self.run()
-  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/tornado/gen.py&#34;, line 1147, in run
-    yielded = self.gen.send(value)
-  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/ipykernel/kernelbase.py&#34;, line 357, in process_one
-    yield gen.maybe_future(dispatch(*args))
-  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/tornado/gen.py&#34;, line 326, in wrapper
-    yielded = next(result)
-  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/ipykernel/kernelbase.py&#34;, line 267, in dispatch_shell
-    yield gen.maybe_future(handler(stream, idents, msg))
-  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/tornado/gen.py&#34;, line 326, in wrapper
-    yielded = next(result)
-  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/ipykernel/kernelbase.py&#34;, line 534, in execute_request
-    user_expressions, allow_stdin,
-  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/tornado/gen.py&#34;, line 326, in wrapper
-    yielded = next(result)
-  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/ipykernel/ipkernel.py&#34;, line 294, in do_execute
-    res = shell.run_cell(code, store_history=store_history, silent=silent)
-  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/ipykernel/zmqshell.py&#34;, line 536, in run_cell
-    return super(ZMQInteractiveShell, self).run_cell(*args, **kwargs)
-  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/IPython/core/interactiveshell.py&#34;, line 2821, in run_cell
-    self.events.trigger(&#39;post_run_cell&#39;, result)
-  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/IPython/core/events.py&#34;, line 88, in trigger
-    func(*args, **kwargs)
-  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/ipykernel/pylab/backend_inline.py&#34;, line 164, in configure_once
-    activate_matplotlib(backend)
-  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/IPython/core/pylabtools.py&#34;, line 314, in activate_matplotlib
-    matplotlib.pyplot.switch_backend(backend)
-  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/matplotlib/pyplot.py&#34;, line 231, in switch_backend
-    matplotlib.use(newbackend, warn=False, force=True)
-  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/matplotlib/__init__.py&#34;, line 1422, in use
-    reload(sys.modules[&#39;matplotlib.backends&#39;])
-  File &#34;/opt/conda/envs/py35/lib/python3.5/importlib/__init__.py&#34;, line 166, in reload
-    _bootstrap._exec(spec, module)
-  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/matplotlib/backends/__init__.py&#34;, line 16, in &lt;module&gt;
-    line for line in traceback.format_stack()
-
-
-  
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<ul>
-<li>import necessary modules</li>
-</ul>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[10]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">zoo.pipeline.api.keras.layers</span> <span class="k">import</span> <span class="n">Dense</span><span class="p">,</span> <span class="n">Dropout</span>
-<span class="kn">from</span> <span class="nn">zoo.pipeline.api.keras.models</span> <span class="k">import</span> <span class="n">Sequential</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="k">import</span> <span class="n">preprocessing</span>
 </pre></div>
 
     </div>
@@ -13298,318 +13154,25 @@ The backend was *originally* set to &#39;module://ipykernel.pylab.backend_inline
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Data-Check">Data Check<a class="anchor-link" href="#Data-Check">&#182;</a></h2>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="About-the-Data">About the Data<a class="anchor-link" href="#About-the-Data">&#182;</a></h1><p>The Auto MPG dataset
-The dataset is available from the UCI Machine Learning Repository.</p>
-<h2 id="Get-the-data">Get the data<a class="anchor-link" href="#Get-the-data">&#182;</a></h2><p>First download the dataset.</p>
+<h2 id="Step-1:-Load-the-Data">Step 1: Load the Data<a class="anchor-link" href="#Step-1:-Load-the-Data">&#182;</a></h2><p>We are going to load the data of the prosper loan dataset.</p>
+<p>Notice we are first loading this into a Pandas dataframe. This is fine for a small dataset, but we will need more than this for a large "at scale" notebook.</p>
+<p>Notice the very large numbers of columns. We are going to take only a selection of those columns.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset_path</span> <span class="o">=</span> <span class="s2">&quot;https://archive.ics.uci.edu/ml/machine-learning-databases/auto-mpg/auto-mpg.data&quot;</span>
-<span class="n">column_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;MPG&#39;</span><span class="p">,</span><span class="s1">&#39;Cylinders&#39;</span><span class="p">,</span><span class="s1">&#39;Displacement&#39;</span><span class="p">,</span><span class="s1">&#39;Horsepower&#39;</span><span class="p">,</span><span class="s1">&#39;Weight&#39;</span><span class="p">,</span>
-                <span class="s1">&#39;Acceleration&#39;</span><span class="p">,</span> <span class="s1">&#39;Model Year&#39;</span><span class="p">,</span> <span class="s1">&#39;Origin&#39;</span><span class="p">]</span> 
-<span class="n">raw_dataset</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="n">column_names</span><span class="p">,</span>
-                      <span class="n">na_values</span> <span class="o">=</span> <span class="s2">&quot;?&quot;</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span>
-                      <span class="n">sep</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">skipinitialspace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">## small file, start with this</span>
+<span class="c1">#datafile = &quot;https://s3.amazonaws.com/elephantscale-public/data/prosper-loan/prosper-loan-data-sample.csv&quot;</span>
+<span class="c1">## this is a large file</span>
+<span class="n">datafile</span> <span class="o">=</span> <span class="s2">&quot;https://s3.amazonaws.com/elephantscale-public/data/prosper-loan/prosper-loan-data.csv.gz&quot;</span>
 
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">raw_dataset</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-<span class="n">dataset</span><span class="o">.</span><span class="n">tail</span><span class="p">()</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt output_prompt">Out[12]:</div>
-
-
-
-<div class="output_html rendered_html output_subarea output_execute_result">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>MPG</th>
-      <th>Cylinders</th>
-      <th>Displacement</th>
-      <th>Horsepower</th>
-      <th>Weight</th>
-      <th>Acceleration</th>
-      <th>Model Year</th>
-      <th>Origin</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>393</th>
-      <td>27.0</td>
-      <td>4</td>
-      <td>140.0</td>
-      <td>86.0</td>
-      <td>2790.0</td>
-      <td>15.6</td>
-      <td>82</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <th>394</th>
-      <td>44.0</td>
-      <td>4</td>
-      <td>97.0</td>
-      <td>52.0</td>
-      <td>2130.0</td>
-      <td>24.6</td>
-      <td>82</td>
-      <td>2</td>
-    </tr>
-    <tr>
-      <th>395</th>
-      <td>32.0</td>
-      <td>4</td>
-      <td>135.0</td>
-      <td>84.0</td>
-      <td>2295.0</td>
-      <td>11.6</td>
-      <td>82</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <th>396</th>
-      <td>28.0</td>
-      <td>4</td>
-      <td>120.0</td>
-      <td>79.0</td>
-      <td>2625.0</td>
-      <td>18.6</td>
-      <td>82</td>
-      <td>1</td>
-    </tr>
-    <tr>
-      <th>397</th>
-      <td>31.0</td>
-      <td>4</td>
-      <td>119.0</td>
-      <td>82.0</td>
-      <td>2720.0</td>
-      <td>19.4</td>
-      <td>82</td>
-      <td>1</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[13]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">origin</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;Origin&#39;</span><span class="p">)</span>
-<span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;USA&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">origin</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="mf">1.0</span>
-<span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Europe&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">origin</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="mf">1.0</span>
-<span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;Japan&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">origin</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="mf">1.0</span>
-<span class="n">dataset</span><span class="o">.</span><span class="n">tail</span><span class="p">()</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt output_prompt">Out[13]:</div>
-
-
-
-<div class="output_html rendered_html output_subarea output_execute_result">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>MPG</th>
-      <th>Cylinders</th>
-      <th>Displacement</th>
-      <th>Horsepower</th>
-      <th>Weight</th>
-      <th>Acceleration</th>
-      <th>Model Year</th>
-      <th>USA</th>
-      <th>Europe</th>
-      <th>Japan</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>393</th>
-      <td>27.0</td>
-      <td>4</td>
-      <td>140.0</td>
-      <td>86.0</td>
-      <td>2790.0</td>
-      <td>15.6</td>
-      <td>82</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-    </tr>
-    <tr>
-      <th>394</th>
-      <td>44.0</td>
-      <td>4</td>
-      <td>97.0</td>
-      <td>52.0</td>
-      <td>2130.0</td>
-      <td>24.6</td>
-      <td>82</td>
-      <td>0.0</td>
-      <td>1.0</td>
-      <td>0.0</td>
-    </tr>
-    <tr>
-      <th>395</th>
-      <td>32.0</td>
-      <td>4</td>
-      <td>135.0</td>
-      <td>84.0</td>
-      <td>2295.0</td>
-      <td>11.6</td>
-      <td>82</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-    </tr>
-    <tr>
-      <th>396</th>
-      <td>28.0</td>
-      <td>4</td>
-      <td>120.0</td>
-      <td>79.0</td>
-      <td>2625.0</td>
-      <td>18.6</td>
-      <td>82</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-    </tr>
-    <tr>
-      <th>397</th>
-      <td>31.0</td>
-      <td>4</td>
-      <td>119.0</td>
-      <td>82.0</td>
-      <td>2720.0</td>
-      <td>19.4</td>
-      <td>82</td>
-      <td>1.0</td>
-      <td>0.0</td>
-      <td>0.0</td>
-    </tr>
-  </tbody>
-</table>
-</div>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[14]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train_dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">frac</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">test_dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">train_dataset</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[15]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">train_labels</span> <span class="o">=</span> <span class="n">train_dataset</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MPG&#39;</span><span class="p">)</span>
-<span class="n">test_labels</span> <span class="o">=</span> <span class="n">test_dataset</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MPG&#39;</span><span class="p">)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[16]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">x_train</span> <span class="o">=</span> <span class="n">train_dataset</span><span class="o">.</span><span class="n">values</span>
-<span class="n">y_train</span> <span class="o">=</span> <span class="n">train_labels</span><span class="o">.</span><span class="n">values</span>
-<span class="n">x_test</span> <span class="o">=</span> <span class="n">test_dataset</span><span class="o">.</span><span class="n">values</span>
-<span class="n">y_test</span> <span class="o">=</span> <span class="n">test_labels</span><span class="o">.</span><span class="n">values</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">datafile</span><span class="p">)</span>
+<span class="n">data</span><span class="o">.</span><span class="n">tail</span><span class="p">()</span>
 </pre></div>
 
     </div>
@@ -13620,44 +13183,35 @@ The dataset is available from the UCI Machine Learning Repository.</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Data-Preparation">Data Preparation<a class="anchor-link" href="#Data-Preparation">&#182;</a></h2>
+<h2 id="Column-Selection">Column Selection<a class="anchor-link" href="#Column-Selection">&#182;</a></h2><p>Let's start with a few columns for now; we can add more later.</p>
+
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[17]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># see the shape</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;x_train&quot;</span><span class="p">,</span> <span class="n">x_train</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;y_train&quot;</span><span class="p">,</span> <span class="n">y_train</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;x_test&quot;</span><span class="p">,</span> <span class="n">x_test</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;y_test&quot;</span><span class="p">,</span> <span class="n">y_test</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">## TODO : select a few columns </span>
+<span class="c1">## start with: &#39;LoanStatus&#39;,  &#39;EmploymentStatus&#39;, &#39;CreditScore&#39;, &#39;StatedMonthlyIncome&#39;, &#39;ListingCategory&#39;</span>
+<span class="c1">#select_columns = [&#39;LoanStatus&#39;, &#39;EmploymentStatus&#39;, &#39;CreditScore&#39;, &#39;???&#39;, &#39;???&#39;]</span>
+
+
+<span class="c1">## we can add more later</span>
+
+<span class="n">select_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;LoanStatus&#39;</span><span class="p">,</span>  <span class="s1">&#39;EmploymentStatus&#39;</span><span class="p">,</span> <span class="s1">&#39;CreditScore&#39;</span><span class="p">,</span> <span class="s1">&#39;StatedMonthlyIncome&#39;</span><span class="p">,</span> <span class="s1">&#39;ListingCategory&#39;</span><span class="p">]</span>
+
+<span class="c1">## Note : vector columns can only have Numbers, don&#39;t include Categorical columns here</span>
+<span class="c1">## And definitely not &#39;LoanStatus&#39;  (if you are curious include and see what happens!)</span>
+<span class="n">vector_columns</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;EmpIndex&#39;</span><span class="p">,</span> <span class="s1">&#39;CreditScore&#39;</span><span class="p">,</span> <span class="s1">&#39;StatedMonthlyIncome&#39;</span><span class="p">,</span> <span class="s1">&#39;CategoryIndex&#39;</span><span class="p">]</span>
+
+<span class="c1">## Feature Columns</span>
+
+<span class="n">feature_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;EmploymentStatusFactor&#39;</span><span class="p">,</span> <span class="s1">&#39;CreditScore&#39;</span><span class="p">,</span> <span class="s1">&#39;StatedMonthlyIncome&#39;</span><span class="p">,</span> <span class="s1">&#39;ListingCategoryFactor&#39;</span><span class="p">]</span>
 </pre></div>
 
     </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>x_train (314, 9)
-y_train (314,)
-x_test (78, 9)
-y_test (78,)
-</pre>
-</div>
-</div>
-
 </div>
 </div>
 
@@ -13665,69 +13219,27 @@ y_test (78,)
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Build-Model">Build Model<a class="anchor-link" href="#Build-Model">&#182;</a></h2>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>We are going to build a Neural Network using the Keras style API:</p>
-<ul>
-<li>Dense Layer (64 Neurons), with Dropout</li>
-<li>Dense Layer (64) Neurons), With Dropout</li>
-<li>Output Layer : (1 Neuron)</li>
-</ul>
+<h2 id="Step-2-:-Clean-Data">Step 2 : Clean Data<a class="anchor-link" href="#Step-2-:-Clean-Data">&#182;</a></h2><p>We should get rid of the NA values.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[18]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">build_model</span><span class="p">(</span><span class="n">train_x</span><span class="p">):</span>
-  <span class="n">model</span> <span class="o">=</span> <span class="n">Sequential</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">## TODO :  Drop any NA, null values.  </span>
+<span class="c1">## Hint : Using `.na.drop()`</span>
+<span class="n">prosper_clean</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
 
-  <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="n">input_dim</span><span class="o">=</span><span class="mi">9</span><span class="p">))</span>
-  <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.2</span><span class="p">))</span>
-  <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">64</span><span class="p">))</span>
-  <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.2</span><span class="p">))</span>
-  <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="n">output_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
-  
-  <span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="s1">&#39;mse&#39;</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;rmsprop&#39;</span><span class="p">)</span>
-  <span class="k">return</span> <span class="n">model</span>
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">build_model</span><span class="p">(</span><span class="n">x_train</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Original record count </span><span class="si">{:,}</span><span class="s2">, cleaned records count </span><span class="si">{:,}</span><span class="s2">,  dropped </span><span class="si">{:,}</span><span class="s2">&quot;</span>\
+      <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">prosper_clean</span><span class="p">),</span> 
+              <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">prosper_clean</span><span class="p">))))</span>
+<span class="n">prosper_clean</span><span class="o">.</span><span class="n">tail</span><span class="p">()</span>
 </pre></div>
 
     </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>creating: createZooKerasSequential
-creating: createZooKerasDense
-creating: createZooKerasDropout
-creating: createZooKerasDense
-creating: createZooKerasDropout
-creating: createZooKerasDense
-creating: createRMSprop
-creating: createZooKerasMeanSquaredError
-</pre>
-</div>
-</div>
-
 </div>
 </div>
 
@@ -13735,48 +13247,21 @@ creating: createZooKerasMeanSquaredError
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Train-the-model">Train the model<a class="anchor-link" href="#Train-the-model">&#182;</a></h2>
+<h2 id="Look-at-some-summary-data">Look at some summary data<a class="anchor-link" href="#Look-at-some-summary-data">&#182;</a></h2><p>Let's look at some summary data here.</p>
+<p>We'd like to see the cardinality of the categorical columns.</p>
+
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[19]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%time</span>
-<span class="c1"># Train the model</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Training begins.&quot;</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
-    <span class="n">x_train</span><span class="p">,</span>
-    <span class="n">y_train</span><span class="p">,</span>
-    <span class="n">batch_size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
-    <span class="n">nb_epoch</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Training completed.&quot;</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">prosper_clean</span><span class="p">[</span><span class="s1">&#39;LoanStatus&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">())</span>
 </pre></div>
 
     </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Training begins.
-Training completed.
-CPU times: user 210 ms, sys: 50 ms, total: 260 ms
-Wall time: 49.1 s
-</pre>
-</div>
-</div>
-
 </div>
 </div>
 
@@ -13784,19 +13269,18 @@ Wall time: 49.1 s
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Prediction">Prediction<a class="anchor-link" href="#Prediction">&#182;</a></h2><ul>
-<li>BigDL models make inferences based on the given data using model.predict(val_rdd) API. A result of RDD is returned. predict_class returns the predicted points. </li>
-</ul>
+<p>It looks like "good" loans outnumber bad about 2-1.  That's a class imbalance but not a dramatic one. We can probably get away with using it as is.</p>
+<p>Let's now look at the Employment Status:</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[21]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">predictions</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">prosper_clean</span><span class="p">[</span><span class="s1">&#39;EmploymentStatus&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">())</span>
 </pre></div>
 
     </div>
@@ -13804,22 +13288,20 @@ Wall time: 49.1 s
 </div>
 
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>It appears that there are a variety of different statuses although Full-Time and Employed (which seem to be the same thing), are the majority.</p>
+
+</div>
+</div>
+</div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[22]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># create the list of difference between prediction and test data</span>
-<span class="n">diff</span><span class="o">=</span><span class="p">[]</span>
-<span class="n">ratio</span><span class="o">=</span><span class="p">[]</span>
-<span class="n">predictions</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
-<span class="n">p</span> <span class="o">=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
-<span class="n">predictions_list</span><span class="o">=</span><span class="p">[]</span>
-<span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y_test</span><span class="p">)):</span>
-    <span class="n">pr</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="n">u</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-    <span class="n">predictions_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pr</span><span class="p">)</span>
-    <span class="n">ratio</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">y_test</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="o">/</span><span class="n">pr</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">diff</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">y_test</span><span class="p">[</span><span class="n">u</span><span class="p">]</span><span class="o">-</span> <span class="n">pr</span><span class="p">))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">prosper_clean</span><span class="p">[</span><span class="s1">&#39;ListingCategory&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">())</span>
 </pre></div>
 
     </div>
@@ -13827,34 +13309,92 @@ Wall time: 49.1 s
 </div>
 
 </div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Hmmmm... the lions share of these appear to be "debt" -- not very meaningful.  Many of the more specific categories like "boat" and "RV" don't account for many loans.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><strong>=&gt; What does that say about the cardinality of these categorical columns? *</strong></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Step-3:-Converting-Categorical-columns">Step 3: Converting Categorical columns<a class="anchor-link" href="#Step-3:-Converting-Categorical-columns">&#182;</a></h2><p>Convert categorical columns to numeric.<br>
+Here let's convert <strong>EmploymentStatus</strong> column</p>
+
+</div>
+</div>
+</div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[14]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">RMSE</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">diff</span><span class="p">)))</span>
-<span class="nb">print</span> <span class="p">(</span><span class="s2">&quot;RMSE = &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">RMSE</span><span class="p">))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># use pd.factorize on EmploymentStatus, ListingCategory</span>
+
+<span class="n">prosper_clean</span><span class="p">[</span><span class="s1">&#39;EmploymentStatusFactor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">factorize</span><span class="p">(</span><span class="n">prosper_clean</span><span class="p">[</span><span class="s1">&#39;EmploymentStatus&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">prosper_clean</span><span class="p">[</span><span class="s1">&#39;ListingCategoryFactor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">factorize</span><span class="p">(</span><span class="n">prosper_clean</span><span class="p">[</span><span class="s1">&#39;ListingCategory&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 
     </div>
 </div>
 </div>
 
-<div class="output_wrapper">
-<div class="output">
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Step-4:-Build-feature-vectors">Step 4: Build feature vectors<a class="anchor-link" href="#Step-4:-Build-feature-vectors">&#182;</a></h2><p>We're going to use this from the <code>feature_columns</code> list.  This will get <em>only</em> the feature columns.</p>
 
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">features</span> <span class="o">=</span> <span class="n">prosper_clean</span><span class="p">[</span><span class="n">feature_columns</span><span class="p">]</span>
+<span class="n">label</span> <span class="o">=</span> <span class="n">prosper_clean</span><span class="p">[</span><span class="s1">&#39;LoanStatus&#39;</span><span class="p">]</span>
+</pre></div>
 
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>RMSE = 9.133555566347562
-</pre>
+    </div>
 </div>
 </div>
 
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Step-5:-Split-Data-into-training-and-test.">Step 5: Split Data into training and test.<a class="anchor-link" href="#Step-5:-Split-Data-into-training-and-test.">&#182;</a></h2><p>We will split our the data up into training and test.  (You know the drill by now).</p>
+<p><strong>=&gt; TODO: Split dataset into 70% training, 30% validation</strong></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">## TODO :  Split the data into 70% training and 30% test sets </span>
+<span class="c1">## Hint : 0.7   , 0.3</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">train_test_split</span>
+<span class="n">train_x</span><span class="p">,</span> <span class="n">test_x</span><span class="p">,</span> <span class="n">train_y</span><span class="p">,</span> <span class="n">test_y</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;training set = &quot;</span> <span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_x</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;testing set = &quot;</span> <span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_x</span><span class="p">))</span>
+</pre></div>
+
+    </div>
 </div>
 </div>
 
@@ -13864,13 +13404,132 @@ Wall time: 49.1 s
 <div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span> 
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">len</span><span class="p">(</span><span class="n">train_x</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 </pre></div>
 
     </div>
 </div>
 </div>
 
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Step-6:-Neural-Network">Step 6: Neural Network<a class="anchor-link" href="#Step-6:-Neural-Network">&#182;</a></h2><p>Here we are going to define our network. We will do this with the Analytics Zoo Keras style API.</p>
+<p>Here's what we have:</p>
+<ul>
+<li>Input Layer</li>
+<li>Hidden Layer (4 Neurons), with Dropout</li>
+<li>Hidden Layer (4 Neurons), with Dropout</li>
+<li><p>Output Layer (1 Neuron)</p>
+<p>This is <em>binary</em> clasification.</p>
+</li>
+</ul>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">zoo.pipeline.api.keras.layers</span> <span class="k">import</span> <span class="n">Dense</span><span class="p">,</span> <span class="n">Dropout</span>
+<span class="kn">from</span> <span class="nn">zoo.pipeline.api.keras.models</span> <span class="k">import</span> <span class="n">Sequential</span>
+
+<span class="k">def</span> <span class="nf">build_model</span><span class="p">(</span><span class="n">train_x</span><span class="p">):</span>
+  <span class="n">model</span> <span class="o">=</span> <span class="n">Sequential</span><span class="p">()</span>
+
+  <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">input_dim</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">train_x</span><span class="o">.</span><span class="n">columns</span><span class="p">)))</span>
+  <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.2</span><span class="p">))</span>
+  <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+  <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.2</span><span class="p">))</span>
+  <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="n">output_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+  
+  <span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="s1">&#39;binary_crossentropy&#39;</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;adam&#39;</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">model</span>
+
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">build_model</span><span class="p">(</span><span class="n">train_x</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Now it's time to train. We will do this with the <code>model.fit()</code> from analytics zoo. Notice the Keras-like <code>.fit</code> semantics.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%time</span>
+<span class="c1"># Train the model</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Training begins.&quot;</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
+    <span class="n">train_x</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+    <span class="n">train_y</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">nb_epoch</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Training completed.&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">predictions</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test_x</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Step-7:-Evaluate-the-model.">Step 7: Evaluate the model.<a class="anchor-link" href="#Step-7:-Evaluate-the-model.">&#182;</a></h2><p>Let us check to see how the model did, using accuracy as a measure.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="k">import</span> <span class="n">accuracy_score</span>
+<span class="n">accuracy_score</span><span class="p">(</span><span class="n">test_y</span><span class="p">,</span> <span class="n">predictions</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Step-8:-Improve-Accuracy">Step 8: Improve Accuracy<a class="anchor-link" href="#Step-8:-Improve-Accuracy">&#182;</a></h2><h3 id="Add-more-features">Add more features<a class="anchor-link" href="#Add-more-features">&#182;</a></h3><p>Look at the schema of the full dataset.  Are there any columns you want to add. Make sure you up the number of neurons in the hidden layer as you add more features.</p>
+
+</div>
+</div>
 </div>
     </div>
   </div>
