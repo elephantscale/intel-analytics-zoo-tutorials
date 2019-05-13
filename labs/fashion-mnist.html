@@ -2,7 +2,7 @@
 <html>
 <head><meta charset="utf-8" />
 
-<title>prosper-zoo</title>
+<title>fashion-mnist</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
@@ -13116,21 +13116,39 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Analytics-Zoo-Neural-Network-:-Prosper-Loan-Dataset">Analytics Zoo Neural Network : Prosper Loan Dataset<a class="anchor-link" href="#Analytics-Zoo-Neural-Network-:-Prosper-Loan-Dataset">&#182;</a></h1><p>We are going to look at the prosper loan dataset.  This dataset shows a history of loans made by Prosper.</p>
-<p>The idea with this dataset is to try to predict whether a loan will be "good" or "bad." There are many ways a loan can be bad, from late payments to defaults, but we will turn this into a binary choice between "good" loans and "bad" loans.</p>
-<p>We will use a neural network in the Keras-style API in Analytics Zoo to do the prediction of "good" loans or "bad.</p>
-<p>This uses Analytics Zoo.   If you want to see a "vanilla" Tensorflow version of this lab, click <a href="./prosper-tf.html">here</a>.</p>
+<h1 id="Distributed-Tensorflow:-Fashion-MNIST-Dataset">Distributed Tensorflow: Fashion MNIST Dataset<a class="anchor-link" href="#Distributed-Tensorflow:-Fashion-MNIST-Dataset">&#182;</a></h1><p>Analytics zoo now features the ability to do distributed tensorflow using the Apache Spark framework on Analytics Zoo.  While the BigDL models are powerful in many ways, there is also an advantage to being able to use the better-known Tensorflow engine.</p>
+<p>Vanilla Tensorflow, however, has some major limitations out of the box.  Parallelization is challenging absent an additional framework that allows us to distribute our workload.  Apache Spark is the perfect such framework -- which is now very mature and able to easily handle heavy workloads on Big Data.</p>
+<p>This dataset uses the higher-level Keras API to to run the fashion MNIST dataset.</p>
+<p>The classic MNIST dataset is not a particularly challenging dataset, but its small images size of 28x28 makes it commonly used as a demonstration.  The Fashion MNIST uses the same image size, but instead substitutes items of fashion.  It is a significantly more challenging and interesting problem.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">zoo.common.nncontext</span> <span class="k">import</span> <span class="n">init_nncontext</span>
-<span class="n">sc</span> <span class="o">=</span> <span class="n">init_nncontext</span><span class="p">(</span><span class="s2">&quot;MPG Regression&quot;</span><span class="p">)</span>  <span class="c1"># Initialize the </span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="kn">from</span> <span class="nn">zoo</span> <span class="k">import</span> <span class="n">init_nncontext</span>
+<span class="n">sc</span> <span class="o">=</span> <span class="n">init_nncontext</span><span class="p">()</span>  <span class="c1"># create NNContext from Analytics Zoo</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Some variables we cn chanage.</span>
+
+<span class="n">max_epoch</span> <span class="o">=</span> <span class="mi">5</span> <span class="c1"># How many epochs to run</span>
+<span class="n">data_num</span> <span class="o">=</span> <span class="mi">6000</span> <span class="c1"># How much data to train on.</span>
+<span class="n">val_num</span> <span class="o">=</span> <span class="mi">600</span> <span class="c1"># How much data to validate on.</span>
 </pre></div>
 
     </div>
@@ -13141,556 +13159,29 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Step-1:-Load-the-Data">Step 1: Load the Data<a class="anchor-link" href="#Step-1:-Load-the-Data">&#182;</a></h2><p>We are going to load the data of the prosper loan dataset.</p>
-<p>Notice we are first loading this into a Pandas dataframe. This is fine for a small dataset, but we will need more than this for a large "at scale" notebook.</p>
-<p>Notice the very large numbers of columns. We are going to take only a selection of those columns.</p>
+<h3 id="Load-the-Data">Load the Data<a class="anchor-link" href="#Load-the-Data">&#182;</a></h3><p>Here we are going to load the data, and convert to RDD</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
 
-<span class="c1">## small file, start with this</span>
-<span class="c1">#datafile = &quot;https://s3.amazonaws.com/elephantscale-public/data/prosper-loan/prosper-loan-data-sample.csv&quot;</span>
-<span class="c1">## this is a large file</span>
-<span class="n">datafile</span> <span class="o">=</span> <span class="s2">&quot;https://s3.amazonaws.com/elephantscale-public/data/prosper-loan/prosper-loan-data.csv.gz&quot;</span>
+<span class="c1"># Load the fashion-mnist pre-shuffled train data and test data</span>
+<span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">),</span> <span class="p">(</span><span class="n">x_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">fashion_mnist</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;x_train shape:&quot;</span><span class="p">,</span> <span class="n">x_train</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;y_train shape:&quot;</span><span class="p">,</span> <span class="n">y_train</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 
-<span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">datafile</span><span class="p">)</span>
-<span class="n">data</span><span class="o">.</span><span class="n">tail</span><span class="p">()</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt output_prompt">Out[2]:</div>
-
-
-
-<div class="output_html rendered_html output_subarea output_execute_result">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Term</th>
-      <th>LoanStatus</th>
-      <th>BorrowerRate</th>
-      <th>ProsperRating (numeric)</th>
-      <th>ProsperScore</th>
-      <th>ListingCategory</th>
-      <th>BorrowerState</th>
-      <th>EmploymentStatus</th>
-      <th>EmploymentStatusDuration</th>
-      <th>IsBorrowerHomeowner</th>
-      <th>...</th>
-      <th>ProsperPaymentsOneMonthPlusLate</th>
-      <th>ProsperPrincipalBorrowed</th>
-      <th>ProsperPrincipalOutstanding</th>
-      <th>LoanOriginalAmount</th>
-      <th>MonthlyLoanPayment</th>
-      <th>Recommendations</th>
-      <th>InvestmentFromFriendsCount</th>
-      <th>InvestmentFromFriendsAmount</th>
-      <th>Investors</th>
-      <th>YearsWithCredit</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>49719</th>
-      <td>36</td>
-      <td>1</td>
-      <td>0.0679</td>
-      <td>4.0</td>
-      <td>6.0</td>
-      <td>Personal</td>
-      <td>WA</td>
-      <td>Full-time</td>
-      <td>69.0</td>
-      <td>True</td>
-      <td>...</td>
-      <td>0.0</td>
-      <td>1000.0</td>
-      <td>847.61</td>
-      <td>4292</td>
-      <td>132.11</td>
-      <td>2</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>194</td>
-      <td>42</td>
-    </tr>
-    <tr>
-      <th>49720</th>
-      <td>36</td>
-      <td>1</td>
-      <td>0.1899</td>
-      <td>4.0</td>
-      <td>6.0</td>
-      <td>Business</td>
-      <td>CO</td>
-      <td>Full-time</td>
-      <td>22.0</td>
-      <td>False</td>
-      <td>...</td>
-      <td>0.0</td>
-      <td>14250.0</td>
-      <td>0.02</td>
-      <td>2000</td>
-      <td>73.30</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>25</td>
-      <td>10</td>
-    </tr>
-    <tr>
-      <th>49721</th>
-      <td>36</td>
-      <td>1</td>
-      <td>0.2639</td>
-      <td>2.0</td>
-      <td>3.0</td>
-      <td>Reno</td>
-      <td>FL</td>
-      <td>Employed</td>
-      <td>25.0</td>
-      <td>False</td>
-      <td>...</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.00</td>
-      <td>2500</td>
-      <td>101.25</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>26</td>
-      <td>6</td>
-    </tr>
-    <tr>
-      <th>49722</th>
-      <td>36</td>
-      <td>0</td>
-      <td>0.1110</td>
-      <td>6.0</td>
-      <td>8.0</td>
-      <td>Other</td>
-      <td>PA</td>
-      <td>Employed</td>
-      <td>21.0</td>
-      <td>True</td>
-      <td>...</td>
-      <td>0.0</td>
-      <td>33501.0</td>
-      <td>4815.42</td>
-      <td>2000</td>
-      <td>65.57</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>22</td>
-      <td>22</td>
-    </tr>
-    <tr>
-      <th>49723</th>
-      <td>60</td>
-      <td>1</td>
-      <td>0.2605</td>
-      <td>4.0</td>
-      <td>5.0</td>
-      <td>Reno</td>
-      <td>GA</td>
-      <td>Full-time</td>
-      <td>94.0</td>
-      <td>True</td>
-      <td>...</td>
-      <td>0.0</td>
-      <td>5000.0</td>
-      <td>3264.37</td>
-      <td>15000</td>
-      <td>449.55</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>274</td>
-      <td>21</td>
-    </tr>
-  </tbody>
-</table>
-<p>5 rows × 46 columns</p>
-</div>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Step-2-:-Clean-Data">Step 2 : Clean Data<a class="anchor-link" href="#Step-2-:-Clean-Data">&#182;</a></h2><p>We should get rid of the NA values.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">## TODO :  Drop any NA, null values.  </span>
-<span class="c1">## Hint : Using `.na.drop()`</span>
-<span class="n">prosper_clean</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Original record count </span><span class="si">{:,}</span><span class="s2">, cleaned records count </span><span class="si">{:,}</span><span class="s2">,  dropped </span><span class="si">{:,}</span><span class="s2">&quot;</span>\
-      <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">prosper_clean</span><span class="p">),</span> 
-              <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">prosper_clean</span><span class="p">))))</span>
-<span class="n">prosper_clean</span><span class="o">.</span><span class="n">tail</span><span class="p">()</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Original record count 49,724, cleaned records count 49,724,  dropped 0
-</pre>
-</div>
-</div>
-
-<div class="output_area">
-
-    <div class="prompt output_prompt">Out[3]:</div>
-
-
-
-<div class="output_html rendered_html output_subarea output_execute_result">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Term</th>
-      <th>LoanStatus</th>
-      <th>BorrowerRate</th>
-      <th>ProsperRating (numeric)</th>
-      <th>ProsperScore</th>
-      <th>ListingCategory</th>
-      <th>BorrowerState</th>
-      <th>EmploymentStatus</th>
-      <th>EmploymentStatusDuration</th>
-      <th>IsBorrowerHomeowner</th>
-      <th>...</th>
-      <th>ProsperPaymentsOneMonthPlusLate</th>
-      <th>ProsperPrincipalBorrowed</th>
-      <th>ProsperPrincipalOutstanding</th>
-      <th>LoanOriginalAmount</th>
-      <th>MonthlyLoanPayment</th>
-      <th>Recommendations</th>
-      <th>InvestmentFromFriendsCount</th>
-      <th>InvestmentFromFriendsAmount</th>
-      <th>Investors</th>
-      <th>YearsWithCredit</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>49719</th>
-      <td>36</td>
-      <td>1</td>
-      <td>0.0679</td>
-      <td>4.0</td>
-      <td>6.0</td>
-      <td>Personal</td>
-      <td>WA</td>
-      <td>Full-time</td>
-      <td>69.0</td>
-      <td>True</td>
-      <td>...</td>
-      <td>0.0</td>
-      <td>1000.0</td>
-      <td>847.61</td>
-      <td>4292</td>
-      <td>132.11</td>
-      <td>2</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>194</td>
-      <td>42</td>
-    </tr>
-    <tr>
-      <th>49720</th>
-      <td>36</td>
-      <td>1</td>
-      <td>0.1899</td>
-      <td>4.0</td>
-      <td>6.0</td>
-      <td>Business</td>
-      <td>CO</td>
-      <td>Full-time</td>
-      <td>22.0</td>
-      <td>False</td>
-      <td>...</td>
-      <td>0.0</td>
-      <td>14250.0</td>
-      <td>0.02</td>
-      <td>2000</td>
-      <td>73.30</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>25</td>
-      <td>10</td>
-    </tr>
-    <tr>
-      <th>49721</th>
-      <td>36</td>
-      <td>1</td>
-      <td>0.2639</td>
-      <td>2.0</td>
-      <td>3.0</td>
-      <td>Reno</td>
-      <td>FL</td>
-      <td>Employed</td>
-      <td>25.0</td>
-      <td>False</td>
-      <td>...</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.00</td>
-      <td>2500</td>
-      <td>101.25</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>26</td>
-      <td>6</td>
-    </tr>
-    <tr>
-      <th>49722</th>
-      <td>36</td>
-      <td>0</td>
-      <td>0.1110</td>
-      <td>6.0</td>
-      <td>8.0</td>
-      <td>Other</td>
-      <td>PA</td>
-      <td>Employed</td>
-      <td>21.0</td>
-      <td>True</td>
-      <td>...</td>
-      <td>0.0</td>
-      <td>33501.0</td>
-      <td>4815.42</td>
-      <td>2000</td>
-      <td>65.57</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>22</td>
-      <td>22</td>
-    </tr>
-    <tr>
-      <th>49723</th>
-      <td>60</td>
-      <td>1</td>
-      <td>0.2605</td>
-      <td>4.0</td>
-      <td>5.0</td>
-      <td>Reno</td>
-      <td>GA</td>
-      <td>Full-time</td>
-      <td>94.0</td>
-      <td>True</td>
-      <td>...</td>
-      <td>0.0</td>
-      <td>5000.0</td>
-      <td>3264.37</td>
-      <td>15000</td>
-      <td>449.55</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>274</td>
-      <td>21</td>
-    </tr>
-  </tbody>
-</table>
-<p>5 rows × 46 columns</p>
-</div>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Look-at-some-summary-data">Look at some summary data<a class="anchor-link" href="#Look-at-some-summary-data">&#182;</a></h2><p>Let's look at some summary data here.</p>
-<p>We'd like to see the cardinality of the categorical columns.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">prosper_clean</span><span class="p">[</span><span class="s1">&#39;LoanStatus&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">())</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>1    33530
-0    16194
-Name: LoanStatus, dtype: int64
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>It looks like "good" loans outnumber bad about 2-1.  That's a class imbalance but not a dramatic one. We can probably get away with using it as is.</p>
-<p>Let's now look at the Employment Status:</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">prosper_clean</span><span class="p">[</span><span class="s1">&#39;EmploymentStatus&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">())</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Full-time        25016
-Employed         18393
-Self-employed     3045
-Part-time         1060
-Other              924
-Retired            703
-Not employed       583
-Name: EmploymentStatus, dtype: int64
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>It appears that there are a variety of different statuses although Full-Time and Employed (which seem to be the same thing), are the majority.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Step-3:-Converting-Categorical-columns">Step 3: Converting Categorical columns<a class="anchor-link" href="#Step-3:-Converting-Categorical-columns">&#182;</a></h2><p>Convert categorical columns to numeric.<br>
-Here let's convert <strong>EmploymentStatus</strong> column</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[7]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># use pd.factorize on EmploymentStatus, ListingCategory</span>
-
-<span class="n">prosper_clean</span><span class="p">[</span><span class="s1">&#39;EmploymentStatusFactor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">factorize</span><span class="p">(</span><span class="n">prosper_clean</span><span class="p">[</span><span class="s1">&#39;EmploymentStatus&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">prosper_clean</span><span class="p">[</span><span class="s1">&#39;ListingCategoryFactor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">factorize</span><span class="p">(</span><span class="n">prosper_clean</span><span class="p">[</span><span class="s1">&#39;ListingCategory&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+<span class="c1"># Convert to RDD</span>
+<span class="n">x_train_rdd</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">parallelize</span><span class="p">(</span><span class="n">x_train</span><span class="p">[:</span><span class="n">data_num</span><span class="p">])</span>
+<span class="n">y_train_rdd</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">parallelize</span><span class="p">(</span><span class="n">y_train</span><span class="p">[:</span><span class="n">data_num</span><span class="p">])</span>
+<span class="n">x_test_rdd</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">parallelize</span><span class="p">(</span><span class="n">x_test</span><span class="p">[:</span><span class="n">data_num</span><span class="p">])</span>
+<span class="n">y_test_rdd</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">parallelize</span><span class="p">(</span><span class="n">y_test</span><span class="p">[:</span><span class="n">data_num</span><span class="p">])</span>
+<span class="n">training_rdd</span> <span class="o">=</span> <span class="n">x_train_rdd</span><span class="o">.</span><span class="n">zip</span><span class="p">(</span><span class="n">y_train_rdd</span><span class="p">)</span>
+<span class="n">testing_rdd</span> <span class="o">=</span> <span class="n">x_test_rdd</span><span class="o">.</span><span class="n">zip</span><span class="p">(</span><span class="n">y_test_rdd</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -13701,19 +13192,48 @@ Here let's convert <strong>EmploymentStatus</strong> column</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Step-4:-Build-feature-vectors">Step 4: Build feature vectors<a class="anchor-link" href="#Step-4:-Build-feature-vectors">&#182;</a></h2><p>We're going to use this from the <code>feature_columns</code> list.  This will get <em>only</em> the feature columns.</p>
+<h2 id="Sample-Images">Sample Images<a class="anchor-link" href="#Sample-Images">&#182;</a></h2><p>Here are some sample images.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">feature_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;EmploymentStatusFactor&#39;</span><span class="p">,</span> <span class="s1">&#39;CreditScore&#39;</span><span class="p">,</span> <span class="s1">&#39;StatedMonthlyIncome&#39;</span><span class="p">,</span> <span class="s1">&#39;ListingCategoryFactor&#39;</span><span class="p">]</span>
-<span class="n">features</span> <span class="o">=</span> <span class="n">prosper_clean</span><span class="p">[</span><span class="n">feature_columns</span><span class="p">]</span>
-<span class="n">label</span> <span class="o">=</span> <span class="n">prosper_clean</span><span class="p">[</span><span class="s1">&#39;LoanStatus&#39;</span><span class="p">]</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="n">figure</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">x_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)):</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">figure</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">xticks</span><span class="o">=</span><span class="p">[],</span> <span class="n">yticks</span><span class="o">=</span><span class="p">[])</span>
+    <span class="c1"># Display each image</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">x_test</span><span class="p">[</span><span class="n">index</span><span class="p">]))</span>
+    
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Define the text labels</span>
+<span class="n">fashion_mnist_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;T-shirt/top&quot;</span><span class="p">,</span>  <span class="c1"># index 0</span>
+                        <span class="s2">&quot;Trouser&quot;</span><span class="p">,</span>      <span class="c1"># index 1</span>
+                        <span class="s2">&quot;Pullover&quot;</span><span class="p">,</span>     <span class="c1"># index 2 </span>
+                        <span class="s2">&quot;Dress&quot;</span><span class="p">,</span>        <span class="c1"># index 3 </span>
+                        <span class="s2">&quot;Coat&quot;</span><span class="p">,</span>         <span class="c1"># index 4</span>
+                        <span class="s2">&quot;Sandal&quot;</span><span class="p">,</span>       <span class="c1"># index 5</span>
+                        <span class="s2">&quot;Shirt&quot;</span><span class="p">,</span>        <span class="c1"># index 6 </span>
+                        <span class="s2">&quot;Sneaker&quot;</span><span class="p">,</span>      <span class="c1"># index 7 </span>
+                        <span class="s2">&quot;Bag&quot;</span><span class="p">,</span>          <span class="c1"># index 8 </span>
+                        <span class="s2">&quot;Ankle boot&quot;</span><span class="p">]</span>   <span class="c1"># index 9</span>
 </pre></div>
 
     </div>
@@ -13724,78 +13244,27 @@ Here let's convert <strong>EmploymentStatus</strong> column</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Step-5:-Split-Data-into-training-and-test.">Step 5: Split Data into training and test.<a class="anchor-link" href="#Step-5:-Split-Data-into-training-and-test.">&#182;</a></h2><p>We will split our the data up into training and test.  (You know the drill by now).</p>
-<p><strong>=&gt; TODO: Split dataset into 70% training, 30% validation</strong></p>
+<h2 id="Tensorflow-Dataset">Tensorflow Dataset<a class="anchor-link" href="#Tensorflow-Dataset">&#182;</a></h2><p>We will now create a TFDataset, which is a tensorflow dataset, loaded into Apache Spark. This will allow us to use Tensorflow trainign and deployment in a distributed fashion.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">## TODO :  Split the data into 70% training and 30% test sets </span>
-<span class="c1">## Hint : 0.7   , 0.3</span>
-<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">train_test_split</span>
-<span class="n">train_x</span><span class="p">,</span> <span class="n">test_x</span><span class="p">,</span> <span class="n">train_y</span><span class="p">,</span> <span class="n">test_y</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;training set = &quot;</span> <span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_x</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;testing set = &quot;</span> <span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_x</span><span class="p">))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">zoo.pipeline.api.net</span> <span class="k">import</span> <span class="n">TFDataset</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">TFDataset</span><span class="o">.</span><span class="n">from_rdd</span><span class="p">(</span><span class="n">training_rdd</span><span class="p">,</span>  <span class="c1"># Training data</span>
+                             <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;features&quot;</span><span class="p">,</span> <span class="s2">&quot;labels&quot;</span><span class="p">],</span>  <span class="c1"># names of keys: features and labels</span>
+                             <span class="n">shapes</span><span class="o">=</span><span class="p">[[</span><span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[]],</span>  <span class="c1">#Input Shape is image, ouput is a scalar (prediction)</span>
+                             <span class="n">types</span><span class="o">=</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">],</span>  <span class="c1">#input are floats, output is an integer</span>
+                             <span class="n">batch_size</span><span class="o">=</span><span class="mi">280</span><span class="p">,</span> <span class="c1"># Batch size to use in training</span>
+                             <span class="n">val_rdd</span><span class="o">=</span><span class="n">testing_rdd</span>  <span class="c1"># What to use as a validation RDD</span>
+                             <span class="p">)</span>
 </pre></div>
 
     </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>training set =  37293
-testing set =  12431
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[10]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">len</span><span class="p">(</span><span class="n">train_x</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt output_prompt">Out[10]:</div>
-
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>4</pre>
-</div>
-
-</div>
-
 </div>
 </div>
 
@@ -13803,15 +13272,126 @@ testing set =  12431
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Step-6:-Neural-Network">Step 6: Neural Network<a class="anchor-link" href="#Step-6:-Neural-Network">&#182;</a></h2><p>Here we are going to define our network. We will do this with the Analytics Zoo Keras style API.</p>
-<p>Here's what we have:</p>
-<ul>
-<li>Input Layer</li>
-<li>Hidden Layer (4 Neurons), with Dropout</li>
-<li>Hidden Layer (4 Neurons), with Dropout</li>
-<li><p>Output Layer (1 Neuron)</p>
-<p>This is <em>binary</em> clasification.</p>
-</li>
+<h3 id="Building-the-Model">Building the Model<a class="anchor-link" href="#Building-the-Model">&#182;</a></h3><p>This model is a simple, feedforward Neural Network with two hidden layers.</p>
+<p>We are using Keras API in Tensorflow, which is becoming the new high-level API standard in Tensorflow. This is <em>not</em> the Zoo Keras API -- this is the Tensorflow Keras API running on top of a Spark RDD running in BigDL.</p>
+<p>This is exciting because it allows us to use Zoo's superior distribution capabilities on Spark to perform distributed Tensorflow</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">from</span> <span class="nn">tensorflow.keras.models</span> <span class="k">import</span> <span class="n">Model</span>
+<span class="kn">from</span> <span class="nn">tensorflow.keras.layers</span> <span class="k">import</span> <span class="n">Input</span><span class="p">,</span> <span class="n">Dense</span><span class="p">,</span> <span class="n">Flatten</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">Input</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">Flatten</span><span class="p">()(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">Dense</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>     <span class="c1"># Hidden Layer: 64 Neurons</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">Dense</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>     <span class="c1"># Hidden Layer: 64 Neurons</span>
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">Dense</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;softmax&#39;</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># Output is label 0-9</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">inputs</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">predictions</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;rmsprop&#39;</span><span class="p">,</span>
+              <span class="n">loss</span><span class="o">=</span><span class="s1">&#39;sparse_categorical_crossentropy&#39;</span><span class="p">,</span>
+              <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">])</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Training">Training<a class="anchor-link" href="#Training">&#182;</a></h3><p>We are going to train using Zoo's TFOptimizer.  This will take the data and train.  We are going to be using RMSProp as our optimizer, with accuracy as our validation metci</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">zoo.pipeline.api.net</span> <span class="k">import</span> <span class="n">TFOptimizer</span>
+<span class="kn">from</span> <span class="nn">bigdl.optim.optimizer</span> <span class="k">import</span> <span class="n">TrainSummary</span><span class="p">,</span> <span class="n">ValidationSummary</span><span class="p">,</span> <span class="n">MaxEpoch</span>
+
+
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">TFOptimizer</span><span class="o">.</span><span class="n">from_keras</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">dataset</span><span class="p">)</span>
+
+<span class="n">optimizer</span><span class="o">.</span><span class="n">set_train_summary</span><span class="p">(</span><span class="n">TrainSummary</span><span class="p">(</span><span class="s2">&quot;/tmp/fashion-mnist_log&quot;</span><span class="p">,</span> <span class="s2">&quot;mnist&quot;</span><span class="p">))</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">set_val_summary</span><span class="p">(</span><span class="n">ValidationSummary</span><span class="p">(</span><span class="s2">&quot;/tmp/fashion-mnist_log&quot;</span><span class="p">,</span> <span class="s2">&quot;mnist&quot;</span><span class="p">))</span>
+<span class="c1"># kick off training</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">end_trigger</span><span class="o">=</span><span class="n">MaxEpoch</span><span class="p">(</span><span class="n">max_epoch</span><span class="p">))</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">save_weights</span><span class="p">(</span><span class="s2">&quot;/tmp/fashion-mnist_keras.h5&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Results">Results<a class="anchor-link" href="#Results">&#182;</a></h3><p>We are going to examine some of the results.  Here we show some sample images and their values.  Red values indicate a misprediction, with the correct index printed afterward, while green values indicate a correct prediction.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="n">y_hat</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+
+<span class="c1"># Plot a random sample of 10 test images, their predicted labels and ground truth</span>
+<span class="n">figure</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">x_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)):</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">figure</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">xticks</span><span class="o">=</span><span class="p">[],</span> <span class="n">yticks</span><span class="o">=</span><span class="p">[])</span>
+    <span class="c1"># Display each image</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">x_test</span><span class="p">[</span><span class="n">index</span><span class="p">]))</span>
+    <span class="n">predict_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">y_hat</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+    <span class="n">true_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">y_test</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+    <span class="c1"># Set the title for each image</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> (</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fashion_mnist_labels</span><span class="p">[</span><span class="n">predict_index</span><span class="p">],</span> 
+                                  <span class="n">fashion_mnist_labels</span><span class="p">[</span><span class="n">true_index</span><span class="p">]),</span>
+                                  <span class="n">color</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;green&quot;</span> <span class="k">if</span> <span class="n">predict_index</span> <span class="o">==</span> <span class="n">true_index</span> <span class="k">else</span> <span class="s2">&quot;red&quot;</span><span class="p">))</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Improving-the-Results">Improving the Results<a class="anchor-link" href="#Improving-the-Results">&#182;</a></h3><p>We only trained with a samll subset of the data to keep the notebook small and lightweight. However, we could and should train with more data.  We can also certainly train for more epochs!</p>
+<p>Also, we should get and use a Convolutional Neural Network architecture similar to LeNet, rather than the current Dense Layers in a Multilayer Perceptron (MLP).</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="Conclusion">Conclusion<a class="anchor-link" href="#Conclusion">&#182;</a></h2><ul>
+<li>Distributed Tensorflow on Zoo is an effective way of taking our tensorflow models and distributing them on a cluster.</li>
+<li>TFDataset corresponds to the <code>Dataset</code> object in the <code>tf.data</code> namespace, but is distributed across a spark RDD.</li>
+<li>TFOptimizer corresponds to the <code>Optimizer</code> objects in Tensorflow</li>
+<li>Tensorflow's Keras API <code>tf.keras</code> is an execellent choice for working with Analytics Zoo</li>
 </ul>
 
 </div>
@@ -13819,192 +13399,16 @@ testing set =  12431
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">zoo.pipeline.api.keras.layers</span> <span class="k">import</span> <span class="n">Dense</span><span class="p">,</span> <span class="n">Dropout</span>
-<span class="kn">from</span> <span class="nn">zoo.pipeline.api.keras.models</span> <span class="k">import</span> <span class="n">Sequential</span>
-
-<span class="k">def</span> <span class="nf">build_model</span><span class="p">(</span><span class="n">train_x</span><span class="p">):</span>
-  <span class="n">model</span> <span class="o">=</span> <span class="n">Sequential</span><span class="p">()</span>
-
-  <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">input_dim</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">train_x</span><span class="o">.</span><span class="n">columns</span><span class="p">)))</span>
-  <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.2</span><span class="p">))</span>
-  <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
-  <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.2</span><span class="p">))</span>
-  <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="n">output_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;sigmoid&#39;</span><span class="p">))</span>
-  
-  <span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="s1">&#39;binary_crossentropy&#39;</span><span class="p">,</span> <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;adam&#39;</span><span class="p">)</span>
-  <span class="k">return</span> <span class="n">model</span>
-
-
-<span class="n">model</span> <span class="o">=</span> <span class="n">build_model</span><span class="p">(</span><span class="n">train_x</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span></span> 
 </pre></div>
 
     </div>
 </div>
 </div>
 
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>creating: createZooKerasSequential
-creating: createZooKerasDense
-creating: createZooKerasDropout
-creating: createZooKerasDense
-creating: createZooKerasDropout
-creating: createZooKerasDense
-creating: createAdam
-creating: createZooKerasBinaryCrossEntropy
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Now it's time to train. We will do this with the <code>model.fit()</code> from analytics zoo. Notice the Keras-like <code>.fit</code> semantics.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[12]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%time</span>
-<span class="c1"># Train the model</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Training begins.&quot;</span><span class="p">)</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span>
-    <span class="n">train_x</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-    <span class="n">train_y</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-    <span class="n">batch_size</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
-    <span class="n">nb_epoch</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Training completed.&quot;</span><span class="p">)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Training begins.
-Training completed.
-CPU times: user 390 ms, sys: 50 ms, total: 440 ms
-Wall time: 22.1 s
-</pre>
-</div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[17]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">predictions</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test_x</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Step-7:-Evaluate-the-model.">Step 7: Evaluate the model.<a class="anchor-link" href="#Step-7:-Evaluate-the-model.">&#182;</a></h2><p>Let us check to see how the model did, using accuracy as a measure.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[18]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="k">import</span> <span class="n">accuracy_score</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="n">accuracy_score</span><span class="p">(</span><span class="n">test_y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">predictions</span><span class="o">.</span><span class="n">collect</span><span class="p">()))</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt output_prompt">Out[18]:</div>
-
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>0.6760518059689486</pre>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>The results indicate that we get 67% accuracy, meaning we are right 2/3 of the time.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Step-8:-Improve-Accuracy">Step 8: Improve Accuracy<a class="anchor-link" href="#Step-8:-Improve-Accuracy">&#182;</a></h2><h3 id="Add-more-features">Add more features<a class="anchor-link" href="#Add-more-features">&#182;</a></h3><p>Look at the schema of the full dataset.  Are there any columns you want to add. Make sure you up the number of neurons in the hidden layer as you add more features.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Conclusion">Conclusion<a class="anchor-link" href="#Conclusion">&#182;</a></h2><ol>
-<li>Models can be used for both classificaiton and regression</li>
-<li>Regression ususally uses a loss function of cross-entropy rather than MSE.</li>
-<li>A Multilayer Peceptron network can be built with Keras style <code>Dense</code> layers.</li>
-</ol>
-
-</div>
-</div>
 </div>
     </div>
   </div>
