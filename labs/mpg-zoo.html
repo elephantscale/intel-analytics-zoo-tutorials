@@ -2,7 +2,7 @@
 <html>
 <head><meta charset="utf-8" />
 
-<title>zoo-nn-fuel-effiiciency</title>
+<title>mpg-zoo</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
@@ -13116,22 +13116,13 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Regression-MPG">Regression MPG<a class="anchor-link" href="#Regression-MPG">&#182;</a></h1>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[1]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-</pre></div>
+<h1 id="Regression-MPG-With-Analytics-Zoo">Regression MPG With Analytics Zoo<a class="anchor-link" href="#Regression-MPG-With-Analytics-Zoo">&#182;</a></h1><p>Here we are going to demonstrate an Analytics Zoo example with the Keras-style API.</p>
+<p>In a regression problem, we aim to predict the output of a continuous value, like a price or a probability. Contrast this with a classification problem, where we aim to select a class from a list of classes (for example, where a picture contains an apple or an orange, recognizing which fruit is in the picture).</p>
+<p>This notebook uses the classic Auto MPG Dataset and builds a model to predict the fuel efficiency of late-1970s and early 1980s automobiles. To do this, we'll provide the model with a description of many automobiles from that time period. This description includes attributes like: cylinders, displacement, horsepower, and weight.</p>
+<p>This example uses the Analytics Zoo Keras-style API.</p>
 
-    </div>
 </div>
 </div>
-
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
@@ -13155,21 +13146,29 @@ div#notebook {
 <div class="prompt input_prompt">In&nbsp;[2]:</div>
 <div class="inner_cell">
     <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="inner_cell">
+    <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 
-<span class="kn">from</span> <span class="nn">zoo.common.nncontext</span> <span class="k">import</span> <span class="o">*</span>
-<span class="n">sc</span> <span class="o">=</span> <span class="n">init_nncontext</span><span class="p">(</span><span class="s2">&quot;MPG Regression&quot;</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">zoo.common.nncontext</span>
+<span class="n">sc</span> <span class="o">=</span> <span class="n">zoo</span><span class="o">.</span><span class="n">common</span><span class="o">.</span><span class="n">nncontext</span><span class="o">.</span><span class="n">init_nncontext</span><span class="p">(</span><span class="s2">&quot;MPG Regression&quot;</span><span class="p">)</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-
-<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;Agg&#39;</span><span class="p">)</span>
 <span class="o">%</span><span class="k">pylab</span> inline
-<span class="kn">import</span> <span class="nn">seaborn</span>
-<span class="kn">import</span> <span class="nn">matplotlib.dates</span> <span class="k">as</span> <span class="nn">md</span>
-<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
-
-<span class="kn">from</span> <span class="nn">sklearn</span> <span class="k">import</span> <span class="n">preprocessing</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
 </pre></div>
 
     </div>
@@ -13191,6 +13190,83 @@ div#notebook {
 </div>
 </div>
 
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>/opt/conda/envs/py35/lib/python3.5/site-packages/ipykernel_launcher.py:8: UserWarning: 
+This call to matplotlib.use() has no effect because the backend has already
+been chosen; matplotlib.use() must be called *before* pylab, matplotlib.pyplot,
+or matplotlib.backends is imported for the first time.
+
+The backend was *originally* set to &#39;module://ipykernel.pylab.backend_inline&#39; by the following code:
+  File &#34;/opt/conda/envs/py35/lib/python3.5/runpy.py&#34;, line 193, in _run_module_as_main
+    &#34;__main__&#34;, mod_spec)
+  File &#34;/opt/conda/envs/py35/lib/python3.5/runpy.py&#34;, line 85, in _run_code
+    exec(code, run_globals)
+  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/ipykernel_launcher.py&#34;, line 16, in &lt;module&gt;
+    app.launch_new_instance()
+  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/traitlets/config/application.py&#34;, line 658, in launch_instance
+    app.start()
+  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/ipykernel/kernelapp.py&#34;, line 505, in start
+    self.io_loop.start()
+  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/tornado/platform/asyncio.py&#34;, line 132, in start
+    self.asyncio_loop.run_forever()
+  File &#34;/opt/conda/envs/py35/lib/python3.5/asyncio/base_events.py&#34;, line 421, in run_forever
+    self._run_once()
+  File &#34;/opt/conda/envs/py35/lib/python3.5/asyncio/base_events.py&#34;, line 1425, in _run_once
+    handle._run()
+  File &#34;/opt/conda/envs/py35/lib/python3.5/asyncio/events.py&#34;, line 127, in _run
+    self._callback(*self._args)
+  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/tornado/ioloop.py&#34;, line 758, in _run_callback
+    ret = callback()
+  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/tornado/stack_context.py&#34;, line 300, in null_wrapper
+    return fn(*args, **kwargs)
+  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/tornado/gen.py&#34;, line 1233, in inner
+    self.run()
+  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/tornado/gen.py&#34;, line 1147, in run
+    yielded = self.gen.send(value)
+  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/ipykernel/kernelbase.py&#34;, line 357, in process_one
+    yield gen.maybe_future(dispatch(*args))
+  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/tornado/gen.py&#34;, line 326, in wrapper
+    yielded = next(result)
+  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/ipykernel/kernelbase.py&#34;, line 267, in dispatch_shell
+    yield gen.maybe_future(handler(stream, idents, msg))
+  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/tornado/gen.py&#34;, line 326, in wrapper
+    yielded = next(result)
+  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/ipykernel/kernelbase.py&#34;, line 534, in execute_request
+    user_expressions, allow_stdin,
+  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/tornado/gen.py&#34;, line 326, in wrapper
+    yielded = next(result)
+  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/ipykernel/ipkernel.py&#34;, line 294, in do_execute
+    res = shell.run_cell(code, store_history=store_history, silent=silent)
+  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/ipykernel/zmqshell.py&#34;, line 536, in run_cell
+    return super(ZMQInteractiveShell, self).run_cell(*args, **kwargs)
+  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/IPython/core/interactiveshell.py&#34;, line 2821, in run_cell
+    self.events.trigger(&#39;post_run_cell&#39;, result)
+  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/IPython/core/events.py&#34;, line 88, in trigger
+    func(*args, **kwargs)
+  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/ipykernel/pylab/backend_inline.py&#34;, line 164, in configure_once
+    activate_matplotlib(backend)
+  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/IPython/core/pylabtools.py&#34;, line 314, in activate_matplotlib
+    matplotlib.pyplot.switch_backend(backend)
+  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/matplotlib/pyplot.py&#34;, line 231, in switch_backend
+    matplotlib.use(newbackend, warn=False, force=True)
+  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/matplotlib/__init__.py&#34;, line 1422, in use
+    reload(sys.modules[&#39;matplotlib.backends&#39;])
+  File &#34;/opt/conda/envs/py35/lib/python3.5/importlib/__init__.py&#34;, line 166, in reload
+    _bootstrap._exec(spec, module)
+  File &#34;/opt/conda/envs/py35/lib/python3.5/site-packages/matplotlib/backends/__init__.py&#34;, line 16, in &lt;module&gt;
+    line for line in traceback.format_stack()
+
+
+  
+</pre>
+</div>
+</div>
+
 </div>
 </div>
 
@@ -13207,7 +13283,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">zoo.pipeline.api.keras.layers</span> <span class="k">import</span> <span class="n">Dense</span><span class="p">,</span> <span class="n">Dropout</span>
@@ -13229,16 +13305,16 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<ul>
-<li>read data</li>
-</ul>
+<h1 id="About-the-Data">About the Data<a class="anchor-link" href="#About-the-Data">&#182;</a></h1><p>The Auto MPG dataset
+The dataset is available from the UCI Machine Learning Repository.</p>
+<h2 id="Get-the-data">Get the data<a class="anchor-link" href="#Get-the-data">&#182;</a></h2><p>First download the dataset.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset_path</span> <span class="o">=</span> <span class="s2">&quot;https://archive.ics.uci.edu/ml/machine-learning-databases/auto-mpg/auto-mpg.data&quot;</span>
@@ -13263,7 +13339,7 @@ div#notebook {
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[4]:</div>
+    <div class="prompt output_prompt">Out[12]:</div>
 
 
 
@@ -13365,7 +13441,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">origin</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;Origin&#39;</span><span class="p">)</span>
@@ -13385,7 +13461,7 @@ div#notebook {
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[5]:</div>
+    <div class="prompt output_prompt">Out[13]:</div>
 
 
 
@@ -13499,7 +13575,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[6]:</div>
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">train_dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">frac</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -13513,7 +13589,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">train_labels</span> <span class="o">=</span> <span class="n">train_dataset</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MPG&#39;</span><span class="p">)</span>
@@ -13527,7 +13603,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">x_train</span> <span class="o">=</span> <span class="n">train_dataset</span><span class="o">.</span><span class="n">values</span>
@@ -13550,7 +13626,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[9]:</div>
+<div class="prompt input_prompt">In&nbsp;[17]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># see the shape</span>
@@ -13596,9 +13672,11 @@ y_test (78,)
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p>We are going to build a Neural Network using the Keras style API:</p>
 <ul>
-<li>Here we show an example of building a RNN network using Analytics Zoo Keras-Style API. 
-There are three LSTM layers and one Dense layer.</li>
+<li>Dense Layer (64 Neurons), with Dropout</li>
+<li>Dense Layer (64) Neurons), With Dropout</li>
+<li>Output Layer : (1 Neuron)</li>
 </ul>
 
 </div>
@@ -13606,7 +13684,7 @@ There are three LSTM layers and one Dense layer.</li>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="prompt input_prompt">In&nbsp;[18]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">build_model</span><span class="p">(</span><span class="n">train_x</span><span class="p">):</span>
@@ -13663,7 +13741,7 @@ creating: createZooKerasMeanSquaredError
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="prompt input_prompt">In&nbsp;[19]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%time</span>
@@ -13693,8 +13771,8 @@ creating: createZooKerasMeanSquaredError
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Training begins.
 Training completed.
-CPU times: user 24 ms, sys: 0 ns, total: 24 ms
-Wall time: 10.4 s
+CPU times: user 210 ms, sys: 50 ms, total: 260 ms
+Wall time: 49.1 s
 </pre>
 </div>
 </div>
@@ -13715,7 +13793,7 @@ Wall time: 10.4 s
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="prompt input_prompt">In&nbsp;[21]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">predictions</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
@@ -13728,7 +13806,7 @@ Wall time: 10.4 s
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[13]:</div>
+<div class="prompt input_prompt">In&nbsp;[22]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># create the list of difference between prediction and test data</span>
@@ -13775,40 +13853,6 @@ Wall time: 10.4 s
 <pre>RMSE = 9.133555566347562
 </pre>
 </div>
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[15]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="k">import</span> <span class="n">r2_score</span>
-<span class="n">r2_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">predictions_list</span><span class="p">)</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt output_prompt">Out[15]:</div>
-
-
-
-
-<div class="output_text output_subarea output_execute_result">
-<pre>-0.9502646483600945</pre>
-</div>
-
 </div>
 
 </div>
