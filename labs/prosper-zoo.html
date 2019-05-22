@@ -13119,18 +13119,18 @@ div#notebook {
 <h1 id="Analytics-Zoo-Neural-Network-:-Prosper-Loan-Dataset">Analytics Zoo Neural Network : Prosper Loan Dataset<a class="anchor-link" href="#Analytics-Zoo-Neural-Network-:-Prosper-Loan-Dataset">&#182;</a></h1><p>We are going to look at the prosper loan dataset.  This dataset shows a history of loans made by Prosper.</p>
 <p>The idea with this dataset is to try to predict whether a loan will be "good" or "bad." There are many ways a loan can be bad, from late payments to defaults, but we will turn this into a binary choice between "good" loans and "bad" loans.</p>
 <p>We will use a neural network in the Keras-style API in Analytics Zoo to do the prediction of "good" loans or "bad.</p>
-<p>This uses Analytics Zoo.   If you want to see a "vanilla" Tensorflow version of this lab, click <a href="./prosper-tf.html">here</a>.</p>
+<p>This uses Analytics Zoo.   If you want to see a "vanilla" Tensorflow version of this lab, click <a href="./prosper-tf.ipynb">here</a>.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[1]:</div>
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">zoo.common.nncontext</span> <span class="k">import</span> <span class="n">init_nncontext</span>
-<span class="n">sc</span> <span class="o">=</span> <span class="n">init_nncontext</span><span class="p">(</span><span class="s2">&quot;MPG Regression&quot;</span><span class="p">)</span>  <span class="c1"># Initialize the </span>
+<span class="n">sc</span> <span class="o">=</span> <span class="n">init_nncontext</span><span class="p">(</span><span class="s2">&quot;Prosper Classification&quot;</span><span class="p">)</span>  <span class="c1"># Initialize the </span>
 </pre></div>
 
     </div>
@@ -13141,7 +13141,7 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Step-1:-Load-the-Data">Step 1: Load the Data<a class="anchor-link" href="#Step-1:-Load-the-Data">&#182;</a></h2><p>We are going to load the data of the prosper loan dataset.</p>
+<h2 id="Load-the-Data">Load the Data<a class="anchor-link" href="#Load-the-Data">&#182;</a></h2><p>We are going to load the data of the prosper loan dataset.</p>
 <p>Notice we are first loading this into a Pandas dataframe. This is fine for a small dataset, but we will need more than this for a large "at scale" notebook.</p>
 <p>Notice the very large numbers of columns. We are going to take only a selection of those columns.</p>
 
@@ -13150,7 +13150,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[2]:</div>
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
@@ -13174,230 +13174,7 @@ div#notebook {
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[2]:</div>
-
-
-
-<div class="output_html rendered_html output_subarea output_execute_result">
-<div>
-<style scoped>
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<table border="1" class="dataframe">
-  <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>Term</th>
-      <th>LoanStatus</th>
-      <th>BorrowerRate</th>
-      <th>ProsperRating (numeric)</th>
-      <th>ProsperScore</th>
-      <th>ListingCategory</th>
-      <th>BorrowerState</th>
-      <th>EmploymentStatus</th>
-      <th>EmploymentStatusDuration</th>
-      <th>IsBorrowerHomeowner</th>
-      <th>...</th>
-      <th>ProsperPaymentsOneMonthPlusLate</th>
-      <th>ProsperPrincipalBorrowed</th>
-      <th>ProsperPrincipalOutstanding</th>
-      <th>LoanOriginalAmount</th>
-      <th>MonthlyLoanPayment</th>
-      <th>Recommendations</th>
-      <th>InvestmentFromFriendsCount</th>
-      <th>InvestmentFromFriendsAmount</th>
-      <th>Investors</th>
-      <th>YearsWithCredit</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>49719</th>
-      <td>36</td>
-      <td>1</td>
-      <td>0.0679</td>
-      <td>4.0</td>
-      <td>6.0</td>
-      <td>Personal</td>
-      <td>WA</td>
-      <td>Full-time</td>
-      <td>69.0</td>
-      <td>True</td>
-      <td>...</td>
-      <td>0.0</td>
-      <td>1000.0</td>
-      <td>847.61</td>
-      <td>4292</td>
-      <td>132.11</td>
-      <td>2</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>194</td>
-      <td>42</td>
-    </tr>
-    <tr>
-      <th>49720</th>
-      <td>36</td>
-      <td>1</td>
-      <td>0.1899</td>
-      <td>4.0</td>
-      <td>6.0</td>
-      <td>Business</td>
-      <td>CO</td>
-      <td>Full-time</td>
-      <td>22.0</td>
-      <td>False</td>
-      <td>...</td>
-      <td>0.0</td>
-      <td>14250.0</td>
-      <td>0.02</td>
-      <td>2000</td>
-      <td>73.30</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>25</td>
-      <td>10</td>
-    </tr>
-    <tr>
-      <th>49721</th>
-      <td>36</td>
-      <td>1</td>
-      <td>0.2639</td>
-      <td>2.0</td>
-      <td>3.0</td>
-      <td>Reno</td>
-      <td>FL</td>
-      <td>Employed</td>
-      <td>25.0</td>
-      <td>False</td>
-      <td>...</td>
-      <td>0.0</td>
-      <td>0.0</td>
-      <td>0.00</td>
-      <td>2500</td>
-      <td>101.25</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>26</td>
-      <td>6</td>
-    </tr>
-    <tr>
-      <th>49722</th>
-      <td>36</td>
-      <td>0</td>
-      <td>0.1110</td>
-      <td>6.0</td>
-      <td>8.0</td>
-      <td>Other</td>
-      <td>PA</td>
-      <td>Employed</td>
-      <td>21.0</td>
-      <td>True</td>
-      <td>...</td>
-      <td>0.0</td>
-      <td>33501.0</td>
-      <td>4815.42</td>
-      <td>2000</td>
-      <td>65.57</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>22</td>
-      <td>22</td>
-    </tr>
-    <tr>
-      <th>49723</th>
-      <td>60</td>
-      <td>1</td>
-      <td>0.2605</td>
-      <td>4.0</td>
-      <td>5.0</td>
-      <td>Reno</td>
-      <td>GA</td>
-      <td>Full-time</td>
-      <td>94.0</td>
-      <td>True</td>
-      <td>...</td>
-      <td>0.0</td>
-      <td>5000.0</td>
-      <td>3264.37</td>
-      <td>15000</td>
-      <td>449.55</td>
-      <td>0</td>
-      <td>0</td>
-      <td>0.0</td>
-      <td>274</td>
-      <td>21</td>
-    </tr>
-  </tbody>
-</table>
-<p>5 rows × 46 columns</p>
-</div>
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Step-2-:-Clean-Data">Step 2 : Clean Data<a class="anchor-link" href="#Step-2-:-Clean-Data">&#182;</a></h2><p>We should get rid of the NA values.</p>
-
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing code_cell rendered">
-<div class="input">
-<div class="prompt input_prompt">In&nbsp;[3]:</div>
-<div class="inner_cell">
-    <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">## TODO :  Drop any NA, null values.  </span>
-<span class="c1">## Hint : Using `.na.drop()`</span>
-<span class="n">prosper_clean</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Original record count </span><span class="si">{:,}</span><span class="s2">, cleaned records count </span><span class="si">{:,}</span><span class="s2">,  dropped </span><span class="si">{:,}</span><span class="s2">&quot;</span>\
-      <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">prosper_clean</span><span class="p">),</span> 
-              <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">prosper_clean</span><span class="p">))))</span>
-<span class="n">prosper_clean</span><span class="o">.</span><span class="n">tail</span><span class="p">()</span>
-</pre></div>
-
-    </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-
-<div class="output_area">
-
-    <div class="prompt"></div>
-
-
-<div class="output_subarea output_stream output_stdout output_text">
-<pre>Original record count 49,724, cleaned records count 49,724,  dropped 0
-</pre>
-</div>
-</div>
-
-<div class="output_area">
-
-    <div class="prompt output_prompt">Out[3]:</div>
+    <div class="prompt output_prompt">Out[4]:</div>
 
 
 
@@ -13587,10 +13364,10 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">prosper_clean</span><span class="p">[</span><span class="s1">&#39;LoanStatus&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">())</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;LoanStatus&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">())</span>
 </pre></div>
 
     </div>
@@ -13629,10 +13406,10 @@ Name: LoanStatus, dtype: int64
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">prosper_clean</span><span class="p">[</span><span class="s1">&#39;EmploymentStatus&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">())</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;EmploymentStatus&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">())</span>
 </pre></div>
 
     </div>
@@ -13676,7 +13453,7 @@ Name: EmploymentStatus, dtype: int64
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Step-3:-Converting-Categorical-columns">Step 3: Converting Categorical columns<a class="anchor-link" href="#Step-3:-Converting-Categorical-columns">&#182;</a></h2><p>Convert categorical columns to numeric.<br>
+<h2 id="Converting-Categorical-columns">Converting Categorical columns<a class="anchor-link" href="#Converting-Categorical-columns">&#182;</a></h2><p>Convert categorical columns to numeric.<br>
 Here let's convert <strong>EmploymentStatus</strong> column</p>
 
 </div>
@@ -13689,8 +13466,8 @@ Here let's convert <strong>EmploymentStatus</strong> column</p>
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># use pd.factorize on EmploymentStatus, ListingCategory</span>
 
-<span class="n">prosper_clean</span><span class="p">[</span><span class="s1">&#39;EmploymentStatusFactor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">factorize</span><span class="p">(</span><span class="n">prosper_clean</span><span class="p">[</span><span class="s1">&#39;EmploymentStatus&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
-<span class="n">prosper_clean</span><span class="p">[</span><span class="s1">&#39;ListingCategoryFactor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">factorize</span><span class="p">(</span><span class="n">prosper_clean</span><span class="p">[</span><span class="s1">&#39;ListingCategory&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">data</span><span class="p">[</span><span class="s1">&#39;EmploymentStatusFactor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">factorize</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;EmploymentStatus&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">data</span><span class="p">[</span><span class="s1">&#39;ListingCategoryFactor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">factorize</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;ListingCategory&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
 </pre></div>
 
     </div>
@@ -13701,7 +13478,7 @@ Here let's convert <strong>EmploymentStatus</strong> column</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Step-4:-Build-feature-vectors">Step 4: Build feature vectors<a class="anchor-link" href="#Step-4:-Build-feature-vectors">&#182;</a></h2><p>We're going to use this from the <code>feature_columns</code> list.  This will get <em>only</em> the feature columns.</p>
+<h2 id="Build-feature-vectors">Build feature vectors<a class="anchor-link" href="#Build-feature-vectors">&#182;</a></h2><p>We're going to use this from the <code>feature_columns</code> list.  This will get <em>only</em> the feature columns.</p>
 
 </div>
 </div>
@@ -13712,11 +13489,93 @@ Here let's convert <strong>EmploymentStatus</strong> column</p>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">feature_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;EmploymentStatusFactor&#39;</span><span class="p">,</span> <span class="s1">&#39;CreditScore&#39;</span><span class="p">,</span> <span class="s1">&#39;StatedMonthlyIncome&#39;</span><span class="p">,</span> <span class="s1">&#39;ListingCategoryFactor&#39;</span><span class="p">]</span>
-<span class="n">features</span> <span class="o">=</span> <span class="n">prosper_clean</span><span class="p">[</span><span class="n">feature_columns</span><span class="p">]</span>
-<span class="n">label</span> <span class="o">=</span> <span class="n">prosper_clean</span><span class="p">[</span><span class="s1">&#39;LoanStatus&#39;</span><span class="p">]</span>
+<span class="n">features</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">feature_columns</span><span class="p">]</span>
+<span class="n">label</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;LoanStatus&#39;</span><span class="p">]</span>
+<span class="n">features</span><span class="o">.</span><span class="n">tail</span><span class="p">()</span>
 </pre></div>
 
     </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[8]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>EmploymentStatusFactor</th>
+      <th>CreditScore</th>
+      <th>StatedMonthlyIncome</th>
+      <th>ListingCategoryFactor</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>49719</th>
+      <td>1</td>
+      <td>760.0</td>
+      <td>10333.333333</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <th>49720</th>
+      <td>1</td>
+      <td>740.0</td>
+      <td>2333.333333</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>49721</th>
+      <td>2</td>
+      <td>660.0</td>
+      <td>4333.333333</td>
+      <td>11</td>
+    </tr>
+    <tr>
+      <th>49722</th>
+      <td>2</td>
+      <td>700.0</td>
+      <td>8041.666667</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>49723</th>
+      <td>1</td>
+      <td>680.0</td>
+      <td>3875.000000</td>
+      <td>11</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
 </div>
 </div>
 
@@ -13724,8 +13583,7 @@ Here let's convert <strong>EmploymentStatus</strong> column</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Step-5:-Split-Data-into-training-and-test.">Step 5: Split Data into training and test.<a class="anchor-link" href="#Step-5:-Split-Data-into-training-and-test.">&#182;</a></h2><p>We will split our the data up into training and test.  (You know the drill by now).</p>
-<p><strong>=&gt; TODO: Split dataset into 70% training, 30% validation</strong></p>
+<h2 id="Split-Data-into-training-and-test.">Split Data into training and test.<a class="anchor-link" href="#Split-Data-into-training-and-test.">&#182;</a></h2><p>We will split our the data up into training and test. Here we do 70% training, 30% test.</p>
 
 </div>
 </div>
@@ -13735,12 +13593,12 @@ Here let's convert <strong>EmploymentStatus</strong> column</p>
 <div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">## TODO :  Split the data into 70% training and 30% test sets </span>
-<span class="c1">## Hint : 0.7   , 0.3</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">## Split the data into 70% training and 30% test sets </span>
+
 <span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="k">import</span> <span class="n">train_test_split</span>
 <span class="n">train_x</span><span class="p">,</span> <span class="n">test_x</span><span class="p">,</span> <span class="n">train_y</span><span class="p">,</span> <span class="n">test_y</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;training set = &quot;</span> <span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_x</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;testing set = &quot;</span> <span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_x</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;training set = &quot;</span> <span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">train_x</span><span class="p">))</span>  <span class="c1"># Show number of rows intraining set</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">train_x</span><span class="p">)</span><span class="o">.</span><span class="n">tail</span><span class="p">()</span>  <span class="c1"># Show last few ros in training set.</span>
 </pre></div>
 
     </div>
@@ -13758,9 +13616,82 @@ Here let's convert <strong>EmploymentStatus</strong> column</p>
 
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>training set =  37293
-testing set =  12431
 </pre>
 </div>
+</div>
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[9]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>EmploymentStatusFactor</th>
+      <th>CreditScore</th>
+      <th>StatedMonthlyIncome</th>
+      <th>ListingCategoryFactor</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>42958</th>
+      <td>2</td>
+      <td>720.0</td>
+      <td>3416.666667</td>
+      <td>7</td>
+    </tr>
+    <tr>
+      <th>8881</th>
+      <td>1</td>
+      <td>720.0</td>
+      <td>5000.000000</td>
+      <td>12</td>
+    </tr>
+    <tr>
+      <th>42234</th>
+      <td>6</td>
+      <td>660.0</td>
+      <td>2185.000000</td>
+      <td>7</td>
+    </tr>
+    <tr>
+      <th>42027</th>
+      <td>1</td>
+      <td>660.0</td>
+      <td>8333.333333</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <th>28867</th>
+      <td>1</td>
+      <td>740.0</td>
+      <td>8333.333333</td>
+      <td>8</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
 </div>
 
 </div>
@@ -13772,7 +13703,8 @@ testing set =  12431
 <div class="prompt input_prompt">In&nbsp;[10]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">len</span><span class="p">(</span><span class="n">train_x</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;test set = &quot;</span> <span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_x</span><span class="p">))</span>  <span class="c1"># Show number of rows in test sete</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">test_x</span><span class="p">)</span><span class="o">.</span><span class="n">tail</span><span class="p">()</span>   <span class="c1"># Show last few rows of test set</span>
 </pre></div>
 
     </div>
@@ -13785,15 +13717,118 @@ testing set =  12431
 
 <div class="output_area">
 
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>test set =  12431
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
     <div class="prompt output_prompt">Out[10]:</div>
 
 
 
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<div class="output_text output_subarea output_execute_result">
-<pre>4</pre>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>EmploymentStatusFactor</th>
+      <th>CreditScore</th>
+      <th>StatedMonthlyIncome</th>
+      <th>ListingCategoryFactor</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>8260</th>
+      <td>2</td>
+      <td>820.0</td>
+      <td>7000.000000</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>33869</th>
+      <td>2</td>
+      <td>720.0</td>
+      <td>10000.000000</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>19996</th>
+      <td>2</td>
+      <td>680.0</td>
+      <td>4166.666667</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>36302</th>
+      <td>1</td>
+      <td>680.0</td>
+      <td>7000.000000</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>25821</th>
+      <td>2</td>
+      <td>680.0</td>
+      <td>9333.333333</td>
+      <td>1</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 </div>
 
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">train_x</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>  <span class="c1"># Print out the names of the columns</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>[&#39;EmploymentStatusFactor&#39;, &#39;CreditScore&#39;, &#39;StatedMonthlyIncome&#39;, &#39;ListingCategoryFactor&#39;]
+</pre>
+</div>
 </div>
 
 </div>
@@ -13803,23 +13838,23 @@ testing set =  12431
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Step-6:-Neural-Network">Step 6: Neural Network<a class="anchor-link" href="#Step-6:-Neural-Network">&#182;</a></h2><p>Here we are going to define our network. We will do this with the Analytics Zoo Keras style API.</p>
+<h2 id="Neural-Network">Neural Network<a class="anchor-link" href="#Neural-Network">&#182;</a></h2><p>Here we are going to define our network. We will do this with the Analytics Zoo Keras style API.</p>
 <p>Here's what we have:</p>
 <ul>
 <li>Input Layer</li>
 <li>Hidden Layer (4 Neurons), with Dropout</li>
 <li>Hidden Layer (4 Neurons), with Dropout</li>
-<li><p>Output Layer (1 Neuron)</p>
-<p>This is <em>binary</em> clasification.</p>
-</li>
+<li>Output Layer (1 Neuron)</li>
 </ul>
+<p>This is <em>binary</em> clasification.</p>
+<p>We will train with Adam optimizer, which is a good all-around optimizer that doesn't need us to play much with hyperparameters.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[11]:</div>
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">zoo.pipeline.api.keras.layers</span> <span class="k">import</span> <span class="n">Dense</span><span class="p">,</span> <span class="n">Dropout</span>
@@ -13828,9 +13863,9 @@ testing set =  12431
 <span class="k">def</span> <span class="nf">build_model</span><span class="p">(</span><span class="n">train_x</span><span class="p">):</span>
   <span class="n">model</span> <span class="o">=</span> <span class="n">Sequential</span><span class="p">()</span>
 
-  <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">input_dim</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">train_x</span><span class="o">.</span><span class="n">columns</span><span class="p">)))</span>
+  <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">input_dim</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">train_x</span><span class="o">.</span><span class="n">columns</span><span class="p">),</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;tanh&#39;</span><span class="p">))</span>
   <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.2</span><span class="p">))</span>
-  <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+  <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;tanh&#39;</span><span class="p">))</span>
   <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.2</span><span class="p">))</span>
   <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="n">output_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;sigmoid&#39;</span><span class="p">))</span>
   
@@ -13882,7 +13917,7 @@ creating: createZooKerasBinaryCrossEntropy
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[12]:</div>
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">%%time</span>
@@ -13912,8 +13947,8 @@ creating: createZooKerasBinaryCrossEntropy
 <div class="output_subarea output_stream output_stdout output_text">
 <pre>Training begins.
 Training completed.
-CPU times: user 390 ms, sys: 50 ms, total: 440 ms
-Wall time: 22.1 s
+CPU times: user 700 ms, sys: 30 ms, total: 730 ms
+Wall time: 41.9 s
 </pre>
 </div>
 </div>
@@ -13924,7 +13959,7 @@ Wall time: 22.1 s
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[17]:</div>
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">predictions</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test_x</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
@@ -13938,19 +13973,19 @@ Wall time: 22.1 s
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Step-7:-Evaluate-the-model.">Step 7: Evaluate the model.<a class="anchor-link" href="#Step-7:-Evaluate-the-model.">&#182;</a></h2><p>Let us check to see how the model did, using accuracy as a measure.</p>
+<h2 id="Evaluate-the-model.">Evaluate the model.<a class="anchor-link" href="#Evaluate-the-model.">&#182;</a></h2><p>Let us check to see how the model did, using accuracy as a measure.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[18]:</div>
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="k">import</span> <span class="n">accuracy_score</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="n">accuracy_score</span><span class="p">(</span><span class="n">test_y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">predictions</span><span class="o">.</span><span class="n">collect</span><span class="p">()))</span>
+<span class="n">accuracy_score</span><span class="p">(</span><span class="n">test_y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">predictions</span><span class="o">.</span><span class="n">collect</span><span class="p">())))</span>
 </pre></div>
 
     </div>
@@ -13963,13 +13998,13 @@ Wall time: 22.1 s
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[18]:</div>
+    <div class="prompt output_prompt">Out[15]:</div>
 
 
 
 
 <div class="output_text output_subarea output_execute_result">
-<pre>0.6760518059689486</pre>
+<pre>0.6657549674201593</pre>
 </div>
 
 </div>
@@ -13989,7 +14024,7 @@ Wall time: 22.1 s
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Step-8:-Improve-Accuracy">Step 8: Improve Accuracy<a class="anchor-link" href="#Step-8:-Improve-Accuracy">&#182;</a></h2><h3 id="Add-more-features">Add more features<a class="anchor-link" href="#Add-more-features">&#182;</a></h3><p>Look at the schema of the full dataset.  Are there any columns you want to add. Make sure you up the number of neurons in the hidden layer as you add more features.</p>
+<h2 id="Improve-Accuracy">Improve Accuracy<a class="anchor-link" href="#Improve-Accuracy">&#182;</a></h2><h3 id="Add-more-features">Add more features<a class="anchor-link" href="#Add-more-features">&#182;</a></h3><p>Look at the schema of the full dataset.  Are there any columns you want to add? Make sure you up the number of neurons in the hidden layer as you add more features.</p>
 
 </div>
 </div>
@@ -13998,13 +14033,26 @@ Wall time: 22.1 s
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Conclusion">Conclusion<a class="anchor-link" href="#Conclusion">&#182;</a></h2><ol>
-<li>Models can be used for both classificaiton and regression</li>
-<li>Regression ususally uses a loss function of cross-entropy rather than MSE.</li>
+<li>Models can be used for both Classification and regression</li>
+<li>Classification ususally uses a loss function of cross-entropy rather than MSE.</li>
 <li>A Multilayer Peceptron network can be built with Keras style <code>Dense</code> layers.</li>
 </ol>
 
 </div>
 </div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+    </div>
+</div>
+</div>
+
 </div>
     </div>
   </div>
