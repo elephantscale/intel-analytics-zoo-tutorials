@@ -105,7 +105,7 @@ python ./zoo/python_packages/sources/bigdl/dataset/movielens.py
 ## Step 7: Copy the model to the folder model-serving-lab in the Analytics Zoo Tutorials bundle.
 
 ```bash
-cp ncf_model.bin $TUTORIALS_DIR/model-serving-lab
+cp ncf_model.bin $TUTORIALS_DIR/model-serving-lab/model.bin
 ```
 
 
