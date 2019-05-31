@@ -1,4 +1,4 @@
-# Model Serving Lab
+# Model Serving Example
 
 
 ## Introduction
@@ -10,6 +10,8 @@ This uses a feature of the Analytics Zoo framework called Model Serving.
 
 We are going to use an example already contained in Analyics Zoo around Recommendation, the NeuralCF example. You can
 view it [here](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/recommendation/README.md)
+
+We will then wrap the example in a web service based on Spring Boot, a subproject of Spring Framework.
 
 
 ## Step 1: Clone the Analytics Zoo github repo
@@ -120,6 +122,12 @@ mvn clean package
 mvn spring-boot:run
 ```
 
+If you need a different port other than port 8080, because for example you have another service running on 8080, do the following:
+
+```bash
+mvn spring-boot:run -Dspring-boot.run.arguments=--server.port=8085
+```
+
 Ensure there are no errors, and leave the service running
 
 ## Step 10: Test the Service using curl
@@ -140,3 +148,20 @@ Recommendation Service
 
 ```bash
 curl localhost:8080/recs
+```
+
+The correct output should be as follows:
+
+```console
+JTensor{data=[8.27429E-4, 0.01408234, 0.12668155, 0.78011787, 0.07829083], shape=[5]}
+JTensor{data=[0.028999357, 0.072623424, 0.8328836, 0.0501375, 0.015356112], shape=[5]}
+JTensor{data=[0.028534638, 0.43427455, 0.3857758, 0.123056024, 0.028358938], shape=[5]}
+JTensor{data=[0.5963797, 0.31189707, 0.023491517, 0.062192094, 0.0060396], shape=[5]}
+JTensor{data=[0.027380347, 0.18206437, 0.14272906, 0.5790257, 0.068800524], shape=[5]}
+JTensor{data=[0.0047057667, 0.023357205, 0.26320422, 0.45267543, 0.2560574], shape=[5]}
+JTensor{data=[6.8185234E-4, 0.022511918, 0.3564061, 0.57112473, 0.04927548], shape=[5]}
+JTensor{data=[0.026432022, 0.3933438, 0.48831466, 0.085218534, 0.0066909124], shape=[5]}
+JTensor{data=[0.0028073282, 0.068083726, 0.5216703, 0.37219667, 0.035242062], shape=[5]}
+```
+
+This is the result of the recommendations.
