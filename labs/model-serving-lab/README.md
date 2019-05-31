@@ -84,7 +84,10 @@ export ANALYTICS_ZOO_HOME=/path/to/analytics-zoo/dist
 Run the following to get the data:
 
 ```bash
-python ./zoo/python_packages/sources/bigdl/dataset/movielens.py
+wget http://files.grouplens.org/datasets/movielens/ml-1m.zip 
+unzip ml-1m.zip
+mkdir -p /tmp/movielens
+mv ml-1m /tmp/movielens
 ```
 
 
