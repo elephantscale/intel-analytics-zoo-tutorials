@@ -149,22 +149,32 @@ Recommendation Service
 
 ## Step 11: Get the Recommendations using curl
 
+Let's try getting some recommendations output. We will try getting predicted rating for user 1 and item 2.
+
 ```bash
-curl localhost:8080/recs
+curl localhost:8080/recs?user=1\&item=2
 ```
 
 The correct output should be as follows:
 
 ```console
 JTensor{data=[8.27429E-4, 0.01408234, 0.12668155, 0.78011787, 0.07829083], shape=[5]}
-JTensor{data=[0.028999357, 0.072623424, 0.8328836, 0.0501375, 0.015356112], shape=[5]}
-JTensor{data=[0.028534638, 0.43427455, 0.3857758, 0.123056024, 0.028358938], shape=[5]}
-JTensor{data=[0.5963797, 0.31189707, 0.023491517, 0.062192094, 0.0060396], shape=[5]}
-JTensor{data=[0.027380347, 0.18206437, 0.14272906, 0.5790257, 0.068800524], shape=[5]}
-JTensor{data=[0.0047057667, 0.023357205, 0.26320422, 0.45267543, 0.2560574], shape=[5]}
-JTensor{data=[6.8185234E-4, 0.022511918, 0.3564061, 0.57112473, 0.04927548], shape=[5]}
-JTensor{data=[0.026432022, 0.3933438, 0.48831466, 0.085218534, 0.0066909124], shape=[5]}
-JTensor{data=[0.0028073282, 0.068083726, 0.5216703, 0.37219667, 0.035242062], shape=[5]}
 ```
 
-This is the result of the recommendations.
+The result is the probabilities of prediction. In this case, the predicted rating is a 4 with a `.78` probability.
+Note the .78 probability shows up in the 4th (3rd counting from zero) index of the returned JTensor object.
+
+We can also try to get other results, for example, for user 2 and item 3 .
+
+```bash
+curl localhost:8080/recs?user=1\&item=2
+```
+
+The predicted output should be:
+```console
+JTensor{data=[0.028999357, 0.07262343, 0.8328836, 0.05013749, 0.0153561095], shape=[5]}
+```
+
+This would indicate that the predicted rating is 3 with a probability of `.83` .
+
+
