@@ -111,6 +111,37 @@ mv ml-1m /tmp/movielens
 cp ncf_model.bin $TUTORIALS_DIR/model-serving-lab/model.bin
 ```
 
+## Step 8: Examine the Logic for the Web Service
+
+Most of the web service logic can be found in the file `src/main/java/com/elephantscale/apilab1/HelloController.java`.
+
+Here is where we take the `model.bin` file and load it to be served:
+
+```java
+String modelPath = System.getProperty("MODEL_PATH", "model.bin");
+rcm = new NueralCFJModel();
+rcm.load(modelPath);
+```
+
+Here is where we take the input user item pairs and return the output:
+
+```java
+List<UserItemPair> userItemPairs = new ArrayList<>();
+userItemPairs.add(new UserItemPair(user,item));
+
+List<List<JTensor>> jts = rcm.preProcess(userItemPairs);
+List<List<JTensor>> finalResult = rcm.predict(jts);
+
+String returnVal = "";
+
+for (List<JTensor> fjt : finalResult) {
+   for (JTensor t : fjt) {
+      returnVal += t + "\n";
+   }
+}
+return returnVal;
+```
+
 
 ## Step 8: Build the Model Serving Lab
 
