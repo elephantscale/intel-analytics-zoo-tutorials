@@ -11,6 +11,15 @@ import java.util.List;
 @RestController
 public class HelloController {
 
+    private final NueralCFJModel rcm;    
+
+
+    public HelloController() {
+        String modelPath = System.getProperty("MODEL_PATH", "model.bin");
+	rcm = new NueralCFJModel();
+        rcm.load(modelPath);
+    }
+
     @RequestMapping("/")
     public String index() {
         return "Recommendations Service\n";
@@ -19,12 +28,6 @@ public class HelloController {
     @RequestMapping("/recs")
     public String getRecs() {
         try {
-            String modelPath = System.getProperty("MODEL_PATH", "model.bin");
-
-            NueralCFJModel rcm = new NueralCFJModel();
-
-            rcm.load(modelPath);
-
             List<UserItemPair> userItemPairs = new ArrayList<>();
             for (int i = 1; i < 10; i++) {
                 userItemPairs.add(new UserItemPair(i, i + 1));
