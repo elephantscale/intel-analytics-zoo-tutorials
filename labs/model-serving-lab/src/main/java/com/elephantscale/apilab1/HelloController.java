@@ -2,6 +2,8 @@ package com.elephantscale.apilab1;
 
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.intel.analytics.zoo.pipeline.inference.JTensor;
 
@@ -25,13 +27,11 @@ public class HelloController {
         return "Recommendations Service\n";
     }
 
-    @RequestMapping("/recs")
-    public String getRecs() {
+    @RequestMapping(method = RequestMethod.GET, value = "/recs")
+    public String getRecs(@RequestParam Integer user, @RequestParam Integer item) {
         try {
             List<UserItemPair> userItemPairs = new ArrayList<>();
-            for (int i = 1; i < 10; i++) {
-                userItemPairs.add(new UserItemPair(i, i + 1));
-            }
+            userItemPairs.add(new UserItemPair(user,item));
 
             List<List<JTensor>> jts = rcm.preProcess(userItemPairs);
 
@@ -50,4 +50,5 @@ public class HelloController {
             return e.toString();
         }
     }
+
 }
